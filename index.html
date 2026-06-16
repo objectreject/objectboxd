@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>objectboxd</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=5" />
 </head>
 <body>
 
@@ -13,90 +13,12 @@
   <!-- Rotating sphere of text -->
   <div id="sphereWrap" aria-hidden="true"></div>
 
-  <!-- Monk silhouette — poster fills it via SVG clipPath -->
+  <!-- Figure mask layer — exact silhouette from fig.png / fig-inv.png.
+       Searching: .fig-cover is a bg-coloured figure punched into the text.
+       Picked:    .fig-poster fills around a figure-shaped hole → text shows inside. -->
   <div id="monkWrap" aria-hidden="true">
-    <svg id="monkSvg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <clipPath id="monkClip">
-          <!-- Head -->
-          <ellipse cx="200" cy="63" rx="42" ry="48"/>
-          <!-- Body + outstretched arms -->
-          <path d="
-            M 183 108
-            C 172 114 158 123 148 131
-            C 116 124 82 124 48 152
-            L 12 176
-            C 8 182 8 190 14 194
-            L 26 197
-            C 62 170 110 152 152 152
-            L 152 366
-            C 150 376 147 387 145 396
-            L 137 590
-            L 158 590
-            C 165 510 172 446 178 398
-            C 186 376 193 364 200 360
-            C 207 364 214 376 222 398
-            C 228 446 235 510 242 590
-            L 263 590
-            L 255 396
-            C 253 387 250 376 248 366
-            L 248 152
-            C 290 152 338 170 374 197
-            L 386 194
-            C 392 190 392 182 388 176
-            L 352 152
-            C 318 124 284 124 252 131
-            C 242 123 228 114 217 108
-            Z
-          "/>
-        </clipPath>
-        <!-- Red glow filter for silhouette outline -->
-        <filter id="edgeGlow" x="-15%" y="-15%" width="130%" height="130%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
-          <feFlood flood-color="#cc0000" flood-opacity="0.9" result="col"/>
-          <feComposite in="col" in2="blur" operator="in" result="glow"/>
-          <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-      </defs>
-
-      <!-- Poster art clipped to silhouette -->
-      <image id="posterImg" href="" x="0" y="0" width="400" height="600"
-             clip-path="url(#monkClip)" preserveAspectRatio="xMidYMid slice"/>
-
-      <!-- Silhouette outline (glowing, visible when no poster) -->
-      <g id="monkOutline" fill="none" stroke="#880000" stroke-width="1.5"
-         opacity="0.6" filter="url(#edgeGlow)">
-        <ellipse cx="200" cy="63" rx="42" ry="48"/>
-        <path d="
-          M 183 108
-          C 172 114 158 123 148 131
-          C 116 124 82 124 48 152
-          L 12 176
-          C 8 182 8 190 14 194
-          L 26 197
-          C 62 170 110 152 152 152
-          L 152 366
-          C 150 376 147 387 145 396
-          L 137 590
-          L 158 590
-          C 165 510 172 446 178 398
-          C 186 376 193 364 200 360
-          C 207 364 214 376 222 398
-          C 228 446 235 510 242 590
-          L 263 590
-          L 255 396
-          C 253 387 250 376 248 366
-          L 248 152
-          C 290 152 338 170 374 197
-          L 386 194
-          C 392 190 392 182 388 176
-          L 352 152
-          C 318 124 284 124 252 131
-          C 242 123 228 114 217 108
-          Z
-        "/>
-      </g>
-    </svg>
+    <div class="fig-cover"></div>
+    <div class="fig-poster" id="posterFig"></div>
   </div>
 
   <!-- Gradient veil over lower portion -->
@@ -153,6 +75,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
     integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

@@ -12,7 +12,7 @@ const $ = id => document.getElementById(id);
 const el = {
   sphereWrap:   $('sphereWrap'),
   monkWrap:     $('monkWrap'),
-  posterImg:    $('posterImg'),
+  posterFig:    $('posterFig'),
   fileInput:    $('fileInput'),
   dropzone:     $('dropzone'),
   uploadError:  $('uploadError'),
@@ -83,7 +83,10 @@ class TextSphere {
       const scale = FOV / (FOV + tz * R);
       const px = W + rx * R * scale, py = H + ty * R * scale;
       const depth = (tz + 1) / 2;
-      s.style.cssText = `left:${px.toFixed(1)}px;top:${py.toFixed(1)}px;opacity:${(0.08 + depth * 0.86).toFixed(2)};font-size:${(0.55 + depth * 0.65).toFixed(2)}rem;z-index:${(depth * 10)|0}`;
+      // Orient each word tangent to the circle around centre → curves like the inside of a sphere
+      let deg = Math.atan2(py - H, px - W) * 180 / Math.PI + 90;
+      if (deg > 90) deg -= 180; else if (deg < -90) deg += 180; // keep words upright-ish
+      s.style.cssText = `left:${px.toFixed(1)}px;top:${py.toFixed(1)}px;transform:translate(-50%,-50%) rotate(${deg.toFixed(1)}deg);opacity:${(0.08 + depth * 0.86).toFixed(2)};font-size:${(0.55 + depth * 0.65).toFixed(2)}rem;z-index:${(depth * 10)|0}`;
     }
     this.raf = requestAnimationFrame(() => this._frame());
   }
@@ -267,8 +270,8 @@ async function spin(db) {
   await wait(300);
 
   const posterUrl = await posterP;
-  el.posterImg.setAttribute('href', posterUrl || '');
-  el.monkWrap.classList.add('visible');
+  el.posterFig.style.backgroundImage = posterUrl ? `url("${posterUrl}")` : '';
+  el.monkWrap.classList.add('picked');
 
   el.resultYear.textContent = picked.year || '';
   el.resultTitle.textContent = picked.name;
@@ -291,23 +294,24 @@ function boot(db) {
   populateSelect(db);
   el.drawBtn.onclick = () => spin(db);
   el.spinAgain.onclick = () => {
-    el.monkWrap.classList.remove('visible');
-    el.posterImg.setAttribute('href', '');
+    el.monkWrap.classList.remove('picked');
+    el.posterFig.style.backgroundImage = '';
     screens.result.classList.remove('reveal');
     showScreen('controls');
     setTimeout(() => spin(db), 120);
   };
   el.backBtn.onclick = () => {
-    el.monkWrap.classList.remove('visible');
-    el.posterImg.setAttribute('href', '');
+    el.monkWrap.classList.remove('picked');
+    el.posterFig.style.backgroundImage = '';
     screens.result.classList.remove('reveal');
     showScreen('controls');
   };
   el.refreshBtn.onclick = () => {
-    el.monkWrap.classList.remove('visible');
+    el.monkWrap.classList.remove('picked', 'show');
     sphere.setWords(['OBJECTBOXD']);
     showScreen('upload');
   };
+  el.monkWrap.classList.add('show');
   showScreen('controls');
 }
 
