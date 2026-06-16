@@ -63,11 +63,11 @@ class TextSphere {
 
   _render() {
     const R = this.R;
-    const fontSize = Math.max(12, R * 0.062);                  // bigger cells, fewer glyphs
+    const fontSize = Math.max(16, R * 0.09);                   // big cells, few glyphs
     this.globe.style.setProperty('--fs', `${fontSize.toFixed(1)}px`);
 
-    const str = (this._words.join(' · ') + ' · ').toUpperCase();
-    const latMax = 72, N = 13;        // fewer parallels → lighter compute
+    const str = (this._words.join('   ') + '   ').toUpperCase();
+    const latMax = 68, N = 7;         // few parallels → much lighter compute
     // inside view: glyphs sit on the FAR wall facing the camera (translateZ -R);
     // the near hemisphere is back-face culled, so we see the wrapping inner grid.
     // longitude runs the opposite way from the outside, so reverse it to keep text legible.
@@ -78,7 +78,7 @@ class TextSphere {
     for (let i = 0; i < N; i++) {
       const phi = -latMax + 2 * latMax * i / (N - 1);          // latitude (deg)
       const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
-      const nChars = Math.max(5, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.64)), 60));
+      const nChars = Math.max(4, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.66)), 46));
 
       // each parallel is its own ring, spun independently and alternating direction
       const ring = document.createElement('div');
@@ -88,7 +88,7 @@ class TextSphere {
 
       for (let k = 0; k < nChars; k++) {
         const ch = str[gi++ % str.length];
-        if (ch === ' ') continue;                              // skip spaces (gaps, fewer nodes)
+        if (!/[A-Z0-9]/.test(ch)) continue;                    // letters only — avoids missing-glyph blocks
         const lam = lamDir * 360 * k / nChars;                 // longitude (deg)
         const s = document.createElement('span');
         s.className = 'glyph';
