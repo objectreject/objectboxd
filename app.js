@@ -53,25 +53,33 @@ class TextSphere {
 
   _build() {
     const vmin = Math.min(window.innerWidth, window.innerHeight);
-    this.R = vmin * 0.52;
-    this.container.style.perspective = `${(vmin * 0.95).toFixed(0)}px`;
+    this.R = vmin * 0.5;
+    // close camera (P just above R) → strong, enveloping fisheye
+    this.container.style.perspective = `${(vmin * 0.66).toFixed(0)}px`;
     this._render();
   }
 
   _render() {
     const R = this.R;
-    const fontSize = Math.max(13, R * 0.058);
+    const fontSize = Math.max(12, R * 0.05);
     this.globe.style.setProperty('--fs', `${fontSize.toFixed(1)}px`);
 
     const str = (this._words.join(' · ') + ' · ').toUpperCase();
-    const latMax = 74, N = 13;        // degrees of sphere shown vertically, parallels
+    const latMax = 82, N = 21;        // degrees of sphere shown vertically, parallels
     const frag = document.createDocumentFragment();
     let gi = 0;
 
     for (let i = 0; i < N; i++) {
       const phi = -latMax + 2 * latMax * i / (N - 1);          // latitude (deg)
       const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
-      const nChars = Math.max(6, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.62)), 84));
+      const nChars = Math.max(5, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.62)), 80));
+
+      // each parallel is its own ring, spun independently and alternating direction
+      const ring = document.createElement('div');
+      ring.className = 'ring';
+      const dur = 150 + i * 7;                                 // slow, slight per-ring variation
+      ring.style.animation = `ringSpin ${dur}s linear infinite ${i % 2 ? 'reverse' : 'normal'}`;
+
       for (let k = 0; k < nChars; k++) {
         const ch = str[gi++ % str.length];
         if (ch === ' ') continue;                              // skip spaces (gaps, fewer nodes)
@@ -81,8 +89,9 @@ class TextSphere {
         s.textContent = ch;
         s.style.transform =
           `rotateY(${lam.toFixed(1)}deg) rotateX(${(-phi).toFixed(1)}deg) translateZ(${R.toFixed(1)}px) translate(-50%,-50%)`;
-        frag.appendChild(s);
+        ring.appendChild(s);
       }
+      frag.appendChild(ring);
     }
     this.globe.replaceChildren(frag);
   }

@@ -1,14 +1,14 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:         #040002;
-  --red:        #aa0000;
-  --red-mid:    #dd1100;
-  --red-bright: #ff2200;
-  --red-dim:    rgba(180, 20, 0, 0.45);
-  --red-glow:   rgba(220, 30, 0, 0.35);
-  --text:       rgba(255, 210, 190, 0.92);
-  --muted:      rgba(200, 80, 60, 0.5);
+  --bg:         #b10411;            /* red screen */
+  --red:        #1f0003;            /* near-black accent */
+  --red-mid:    #0a0000;            /* black — text / glyphs */
+  --red-bright: #ff5347;            /* light warning / hover pop */
+  --red-dim:    rgba(0, 0, 0, 0.38);
+  --red-glow:   rgba(0, 0, 0, 0.32);
+  --text:       #0a0000;            /* black primary text */
+  --muted:      rgba(28, 0, 0, 0.62);
   --font:       -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
@@ -57,10 +57,15 @@ html, body {
 #sphereGlobe {
   position: absolute; left: 50%; top: 50%;
   transform-style: preserve-3d;
-  animation: globeSpin 48s linear infinite;
+}
+
+/* Each parallel is its own ring, spun independently (alternating direction in JS) */
+.ring {
+  position: absolute; left: 0; top: 0;
+  transform-style: preserve-3d;
   will-change: transform;
 }
-@keyframes globeSpin { to { transform: rotateY(360deg); } }
+@keyframes ringSpin { to { transform: rotateY(360deg); } }
 
 .glyph {
   position: absolute; left: 0; top: 0;
@@ -68,7 +73,7 @@ html, body {
   font-weight: 700;
   font-size: var(--fs, 22px);
   color: var(--red-mid);
-  text-shadow: 0 0 6px var(--red-glow);
+  text-shadow: 0 0 5px var(--red-glow);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   white-space: nowrap;
@@ -117,8 +122,8 @@ html, body {
   position: fixed; bottom: 0; left: 0; right: 0;
   height: 55%;
   background: linear-gradient(to top,
-    rgba(4,0,2,.97) 0%,
-    rgba(4,0,2,.7) 40%,
+    rgba(120,2,11,.97) 0%,
+    rgba(120,2,11,.7) 40%,
     transparent 100%);
   z-index: 4;
   pointer-events: none;
@@ -218,14 +223,14 @@ select {
   text-transform: uppercase;
   padding: 5px 20px 5px 4px;
   cursor: pointer; appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23aa0000' stroke-width='1.3' fill='none'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23000000' stroke-width='1.3' fill='none'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 4px center;
   outline: none; max-width: 80vw; text-align: center;
   transition: color .2s, border-color .2s;
 }
 select:hover, select:focus { color: var(--text); border-bottom-color: var(--red-dim); }
 select option {
-  background: #0e0004; font-size: .9rem;
+  background: #2a0204; color: #f2dada; font-size: .9rem;
   text-transform: none; font-weight: 400; letter-spacing: 0;
 }
 
