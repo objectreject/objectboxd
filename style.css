@@ -196,7 +196,7 @@ body.result-mode .veil { opacity: 1; }
 
 .upload-hint {
   position: fixed; z-index: 20;
-  left: 40px; top: 50%; transform: translateY(-50%);
+  left: 40px; bottom: 36px;
   text-align: left;
   font-size: .58rem;
   letter-spacing: .12em;
@@ -204,7 +204,7 @@ body.result-mode .veil { opacity: 1; }
   color: var(--ui-dim);
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.22);
   line-height: 2.1;
-  max-width: 190px;
+  white-space: nowrap;          /* keep the settings/arrows line on one line */
   pointer-events: none;
 }
 .upload-hint span { opacity: .75; }
