@@ -141,8 +141,7 @@ html, body {
 
 .upload-logo {
   position: fixed; top: 32px; left: 40px;
-  font-size: 1rem; font-weight: 900;
-  letter-spacing: -.02em; text-transform: uppercase;
+  font-size: 1rem; font-weight: 700;
   color: var(--red); z-index: 20;
 }
 
@@ -166,14 +165,8 @@ html, body {
   display: flex; align-items: center; justify-content: space-between;
 }
 .ctrl-logo {
-  font-size: 1rem; font-weight: 900;
-  letter-spacing: -.02em; text-transform: uppercase;
+  font-size: 1rem; font-weight: 700;
   color: var(--red);
-}
-.ctrl-right { display: flex; align-items: center; gap: 16px; }
-.ctrl-date {
-  font-size: .68rem; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--muted);
 }
 
 .ctrl-mid {
@@ -212,23 +205,27 @@ select option {
   text-transform: uppercase; color: var(--muted);
 }
 
-.spin-btn {
+.draw-btn {
   align-self: center;
   font-family: var(--font);
-  font-size: clamp(4rem, 16vw, 10rem);
-  font-weight: 900; letter-spacing: -.06em;
-  text-transform: uppercase; line-height: 1;
-  background: none; border: none; color: var(--red-mid);
-  cursor: pointer; padding: 0;
-  text-shadow: 0 0 60px var(--red-dim), 0 0 120px rgba(180,0,0,.2);
-  transition: color .15s, text-shadow .15s, letter-spacing .2s;
+  font-size: .78rem;
+  font-weight: 400;
+  letter-spacing: .18em;
+  text-transform: lowercase;
+  background: none;
+  border: 1px solid var(--red-dim);
+  color: var(--muted);
+  cursor: pointer;
+  padding: 8px 22px;
+  border-radius: 1px;
+  transition: color .2s, border-color .2s;
+  margin-bottom: 8px;
 }
-.spin-btn:hover {
-  color: var(--red-bright);
-  letter-spacing: -.09em;
-  text-shadow: 0 0 40px rgba(255,40,0,.7), 0 0 80px rgba(220,0,0,.4);
+.draw-btn:hover {
+  color: var(--text);
+  border-color: var(--red);
 }
-.spin-btn:active { transform: scale(.97); }
+.draw-btn:disabled { opacity: .35; cursor: not-allowed; }
 
 /* ── ③ Result ────────────────────────────────────────────────── */
 
