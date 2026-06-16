@@ -132,7 +132,7 @@ html, body {
 /* small, fixed to center-bottom, whole figure shown (contain, no edge crop) */
 .fig-window {
   position: absolute;
-  left: 50%; bottom: -1%;            /* slight overshoot so it covers the very bottom edge */
+  left: 50%; bottom: -2.5%;          /* overshoot so it covers the uneven bottom corner */
   transform: translateX(-50%);
   width: min(61vw, 800px);
   aspect-ratio: 1292 / 733;          /* tight-cropped silhouette */
@@ -195,17 +195,19 @@ body.result-mode .veil { opacity: 1; }
 }
 
 .upload-hint {
-  position: relative; z-index: 20;
-  text-align: center;
-  font-size: .72rem;
-  letter-spacing: .14em;
+  position: fixed; z-index: 20;
+  left: 40px; top: 50%; transform: translateY(-50%);
+  text-align: left;
+  font-size: .58rem;
+  letter-spacing: .12em;
   text-transform: uppercase;
-  color: var(--ui);
+  color: var(--ui-dim);
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.22);
-  line-height: 2;
-  margin-bottom: 48px;
+  line-height: 2.1;
+  max-width: 190px;
+  pointer-events: none;
 }
-.upload-hint span { opacity: .7; }
+.upload-hint span { opacity: .75; }
 
 .upload-logo {
   position: fixed; top: 32px; left: 40px;
@@ -368,7 +370,7 @@ select option {
 
 /* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 540px) {
-  .upload-logo, .ctrl-logo, .result-back { left: 20px; }
+  .upload-logo, .ctrl-logo, .result-back, .upload-hint { left: 20px; }
   #screenControls { padding: 24px 20px 36px; }
   #screenResult { padding: 0 20px 40px; }
   .ctrl-top { top: 24px; }
