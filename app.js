@@ -109,7 +109,11 @@ class TextSphere {
   start() { /* spin is a CSS animation */ }
 }
 
+// Idle text shown on the sphere whenever no film is drawn
+const IDLE = 'In nature we never see anything isolated, but everything in connection with something else which is before it, beside it, under it, and over it.';
+
 const sphere = new TextSphere(el.sphereWrap);
+sphere.setWords([IDLE]);
 sphere.start();
 
 // ── CSV parsing ───────────────────────────────────────────────────────────────
@@ -273,7 +277,7 @@ function populateSelect(db) {
   const sync = () => {
     const n = getFilms(db).length;
     el.sourceCount.textContent = `${n} film${n === 1 ? '' : 's'}`;
-    sphere.setWords(wordsFrom(el.sourceSelect.options[el.sourceSelect.selectedIndex]?.textContent || 'objectboxd'));
+    sphere.setWords([IDLE]);                              // idle quote until a film is drawn
   };
   el.sourceSelect.addEventListener('change', sync);
   sync();
@@ -350,11 +354,12 @@ function boot(db) {
     el.monkWrap.classList.remove('picked');
     el.posterFig.style.backgroundImage = '';
     screens.result.classList.remove('reveal');
+    sphere.setWords([IDLE]);
     showScreen('controls');
   };
   el.refreshBtn.onclick = () => {
     el.monkWrap.classList.remove('picked', 'show');
-    sphere.setWords(['OBJECTBOXD']);
+    sphere.setWords([IDLE]);
     showScreen('upload');
   };
   el.monkWrap.classList.add('show');
