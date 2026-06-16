@@ -63,13 +63,14 @@ class TextSphere {
 
   _render() {
     const R = this.R;
-    const fontSize = Math.max(20, R * 0.13);                   // big text
+    const fontSize = Math.max(18, R * 0.12);                   // big text
     this.globe.style.setProperty('--fs', `${fontSize.toFixed(1)}px`);
 
     const str = (this._words.join('   ') + '   ').toUpperCase();
     // wider latitude coverage → lines reach toward the poles and bunch there,
-    // so the bulge reads as an even, circular sphere (not just a horizontal lens)
-    const latMax = 80, N = 9;
+    // so the bulge reads as an even, circular sphere (not just a horizontal lens).
+    // generate 12 rows but drop the topmost (it bunches too hard at the pole).
+    const latMax = 80, N = 12;
     // inside view: glyphs sit on the FAR wall facing the camera (translateZ -R);
     // the near hemisphere is back-face culled, so we see the wrapping inner grid.
     // longitude runs the opposite way from the outside, so reverse it to keep text legible.
@@ -78,6 +79,7 @@ class TextSphere {
     let gi = 0;
 
     for (let i = 0; i < N; i++) {
+      if (i === N - 1) continue;                               // drop the over-bunched top row
       const phi = -latMax + 2 * latMax * i / (N - 1);          // latitude (deg)
       const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
       const nChars = Math.max(4, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.66)), 34));
