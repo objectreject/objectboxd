@@ -145,10 +145,15 @@ function parseLine(line) {
 }
 
 function csvFilms(text) {
-  const rows = text.trim().split(/\r?\n/).filter(Boolean);
+  // Strip UTF-8 BOM if present
+  const clean = text.replace(/^﻿/, '');
+  const rows = clean.trim().split(/\r?\n/).filter(Boolean);
   if (rows.length < 2) return [];
   const h = parseLine(rows[0]).map(x => x.toLowerCase().replace(/\s+/g,'_'));
-  const ni = h.indexOf('name'), yi = h.indexOf('year'), ui = h.indexOf('letterboxd_uri');
+  const ni = h.indexOf('name');
+  const yi = h.indexOf('year');
+  // Match 'letterboxd_uri', 'letterboxd_url', or any header containing 'letterboxd'
+  const ui = h.findIndex(x => x === 'letterboxd_uri' || x === 'letterboxd_url' || (x.includes('letterboxd') && x.includes('uri')) || (x.includes('letterboxd') && x.includes('url')));
   if (ni < 0 || ui < 0) return [];
   return rows.slice(1).map(r => {
     const f = parseLine(r);
@@ -159,16 +164,20 @@ function csvFilms(text) {
   }).filter(Boolean);
 }
 
-const SKIP = new Set(['ratings.csv','diary.csv','reviews.csv','profile.csv','comments.csv','likes.csv','films.csv']);
+const SKIP = new Set(['ratings.csv','diary.csv','reviews.csv','profile.csv',
+  'comments.csv','likes.csv','films.csv','watchlist.csv']);
 
 function ingest(filename, text, db) {
   if (SKIP.has(filename)) return;
   const films = csvFilms(text);
   if (!films.length) return;
-  if (filename === 'watchlist.csv') { db.watchlist.push(...films); return; }
-  const name = filename.replace(/\.csv$/,'')
-    .replace(/^list-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}-/,'')
-    .replace(/-/g,' ').trim() || filename;
+  // Strip any date prefix Letterboxd adds: list-YYYY-MM-DD-HH-MM-SS- or list-YYYY-MM-DD-
+  const name = filename
+    .replace(/\.csv$/, '')
+    .replace(/^list-[\d-]+-/, '')
+    .replace(/-/g, ' ')
+    .trim() || filename.replace(/\.csv$/, '');
+  console.log(`[objectboxd] list parsed: "${name}" — ${films.length} films`);
   db.lists.push({ name, films });
 }
 
@@ -185,8 +194,8 @@ async function processFiles(files) {
       ingest(file.name.toLowerCase(), await file.text(), db);
     }
   }
-  if (!db.watchlist.length && !db.lists.length)
-    throw new Error('No film data found — are these Letterboxd export files?');
+  if (!db.lists.length)
+    throw new Error('No lists found — upload your full Letterboxd export .zip (not just a single CSV).');
   return db;
 }
 
@@ -219,21 +228,15 @@ function slugify(s) { return s.replace(/[^a-z0-9]+/gi,'-').toLowerCase().replace
 
 function getFilms(db) {
   const v = el.sourceSelect.value;
-  return v === '__watchlist__'
-    ? db.watchlist
-    : (db.lists.find(l => slugify(l.name) === v)?.films ?? []);
+  return db.lists.find(l => slugify(l.name) === v)?.films ?? [];
 }
 
 function populateSelect(db) {
   el.sourceSelect.innerHTML = '';
-  if (db.watchlist.length) {
-    const o = document.createElement('option');
-    o.value = '__watchlist__'; o.textContent = '★ Watchlist';
-    el.sourceSelect.appendChild(o);
-  }
   db.lists.forEach(lst => {
     const o = document.createElement('option');
-    o.value = slugify(lst.name); o.textContent = lst.name;
+    o.value = slugify(lst.name);
+    o.textContent = lst.name.replace(/-/g, ' ');
     el.sourceSelect.appendChild(o);
   });
   const updateCount = () => {
@@ -363,7 +366,7 @@ el.dropzone.addEventListener('drop', e => {
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 const saved = load();
-if (saved?.watchlist?.length || saved?.lists?.length) {
+if (saved?.lists?.length) {
   boot(saved);
 } else {
   showScreen('upload');
