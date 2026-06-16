@@ -187,7 +187,7 @@ async function processFiles(files) {
       const zip = await JSZip.loadAsync(file);
       for (const [path, entry] of Object.entries(zip.files)) {
         if (entry.dir || !path.endsWith('.csv')) continue;
-        ingest(path.split('/').pop().toLowerCase(), await entry.async('text'), db);
+        ingest(path.split('/').pop().toLowerCase(), await entry.async('string'), db);
       }
     } else if (file.name.endsWith('.csv')) {
       ingest(file.name.toLowerCase(), await file.text(), db);
