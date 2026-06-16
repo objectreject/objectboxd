@@ -54,41 +54,42 @@ class TextSphere {
 
   _build() {
     const vmin = Math.min(window.innerWidth, window.innerHeight);
-    this.R = vmin * 0.5;
+    this.R = vmin * 0.62;                                       // larger → zoomed in
     // inside: camera near the centre (small perspective) → strong barrel fisheye of the far wall.
     // convex: camera outside, looking at the ball.
-    this.container.style.perspective = `${(vmin * (this.inside ? 0.32 : 0.66)).toFixed(0)}px`;
+    this.container.style.perspective = `${(vmin * (this.inside ? 0.26 : 0.66)).toFixed(0)}px`;
     this._render();
   }
 
   _render() {
     const R = this.R;
-    const fontSize = Math.max(9, R * 0.033);                   // small → dense, close lines
+    const fontSize = Math.max(11, R * 0.05);                   // bigger cells, fewer glyphs
     this.globe.style.setProperty('--fs', `${fontSize.toFixed(1)}px`);
 
     const str = (this._words.join(' · ') + ' · ').toUpperCase();
-    const latMax = 86, N = 33;        // many closely-spaced parallels
+    const latMax = 74, N = 17;        // fewer parallels → lighter compute
     // inside view: glyphs sit on the FAR wall facing the camera (translateZ -R);
     // the near hemisphere is back-face culled, so we see the wrapping inner grid.
-    const zSign = this.inside ? -1 : 1;
+    // longitude runs the opposite way from the outside, so reverse it to keep text legible.
+    const zSign = this.inside ? -1 : 1, lamDir = this.inside ? -1 : 1;
     const frag = document.createDocumentFragment();
     let gi = 0;
 
     for (let i = 0; i < N; i++) {
       const phi = -latMax + 2 * latMax * i / (N - 1);          // latitude (deg)
       const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
-      const nChars = Math.max(5, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.62)), 130));
+      const nChars = Math.max(5, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.62)), 80));
 
       // each parallel is its own ring, spun independently and alternating direction
       const ring = document.createElement('div');
       ring.className = 'ring';
-      const dur = 150 + i * 5;                                 // slow, slight per-ring variation
+      const dur = 150 + i * 6;                                 // slow, slight per-ring variation
       ring.style.animation = `ringSpin ${dur}s linear infinite ${i % 2 ? 'reverse' : 'normal'}`;
 
       for (let k = 0; k < nChars; k++) {
         const ch = str[gi++ % str.length];
         if (ch === ' ') continue;                              // skip spaces (gaps, fewer nodes)
-        const lam = 360 * k / nChars;                          // longitude (deg)
+        const lam = lamDir * 360 * k / nChars;                 // longitude (deg)
         const s = document.createElement('span');
         s.className = 'glyph';
         s.textContent = ch;

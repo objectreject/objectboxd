@@ -56,9 +56,9 @@ html, body {
   z-index: 1;
   overflow: hidden;
   perspective-origin: 50% 50%;          /* perspective px is set from JS */
-  /* fade the text out toward the rim of the sphere */
-  -webkit-mask-image: radial-gradient(ellipse 86% 90% at 50% 50%, #000 44%, transparent 100%);
-  mask-image: radial-gradient(ellipse 86% 90% at 50% 50%, #000 44%, transparent 100%);
+  /* fade the text out toward the rim of the sphere (round, not oval) */
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 58%, transparent 100%);
+  mask-image: radial-gradient(circle at 50% 50%, #000 58%, transparent 100%);
 }
 
 #sphereGlobe {
