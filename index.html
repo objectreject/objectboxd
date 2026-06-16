@@ -4,21 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>objectboxd</title>
-  <link rel="stylesheet" href="style.css?v=23" />
+  <link rel="stylesheet" href="style.css?v=24" />
 </head>
 <body>
 
   <div class="grain" aria-hidden="true"></div>
 
+  <!-- Full-screen red-tinted poster, behind the text (result only) -->
+  <div id="posterBack" aria-hidden="true"></div>
+
   <!-- Rotating sphere of text -->
   <div id="sphereWrap" aria-hidden="true"></div>
 
-  <!-- Figure mask layer — exact silhouette from fig.png / fig-inv.png.
-       Searching: .fig-cover is a bg-coloured figure punched into the text.
-       Picked:    .fig-poster fills around a figure-shaped hole → text shows inside. -->
+  <!-- Figure window (exact silhouette from fig.png):
+       idle = solid black silhouette · result = bright clear window into the poster -->
   <div id="monkWrap" aria-hidden="true">
-    <div class="fig-cover"></div>
-    <div class="fig-poster" id="posterFig"></div>
+    <div class="fig-window" id="figWindow"></div>
   </div>
 
   <!-- Gradient veil over lower portion -->
@@ -75,6 +76,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
     integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="app.js?v=23"></script>
+  <script src="app.js?v=24"></script>
 </body>
 </html>

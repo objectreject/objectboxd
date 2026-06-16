@@ -11,8 +11,8 @@ const PROXIES = [
 const $ = id => document.getElementById(id);
 const el = {
   sphereWrap:   $('sphereWrap'),
-  monkWrap:     $('monkWrap'),
-  posterFig:    $('posterFig'),
+  posterBack:   $('posterBack'),
+  figWindow:    $('figWindow'),
   fileInput:    $('fileInput'),
   dropzone:     $('dropzone'),
   uploadError:  $('uploadError'),
@@ -305,8 +305,12 @@ async function spin(db) {
   // Pick is instant — show the title on the sphere, then reveal once the poster lands
   sphere.setWords(wordsFrom(picked.name));
   const posterUrl = await fetchPoster(picked.url);
-  el.posterFig.style.backgroundImage = posterUrl ? `url("${posterUrl}")` : '';
-  el.monkWrap.classList.add('show', 'picked');
+  if (posterUrl) {
+    el.figWindow.style.backgroundImage = `url("${posterUrl}")`;                 // bright clear window
+    el.posterBack.style.backgroundImage =                                       // full-screen, red-tinted
+      `linear-gradient(rgba(177,4,17,.5), rgba(177,4,17,.5)), url("${posterUrl}")`;
+    el.posterBack.classList.add('show');
+  }
 
   el.resultYear.textContent = picked.year || '';
   el.resultTitle.textContent = picked.name;
@@ -345,25 +349,30 @@ window.addEventListener('resize', () => {
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 
+// back to the idle state: figure → black silhouette, drop the poster backdrop
+function resetPoster() {
+  el.figWindow.style.backgroundImage = '';
+  el.posterBack.classList.remove('show');
+  el.posterBack.style.backgroundImage = '';
+}
+
 function boot(db) {
   populateSelect(db);
   el.drawBtn.onclick = () => spin(db);
   el.spinAgain.onclick = () => {
-    el.monkWrap.classList.remove('picked', 'show');
-    el.posterFig.style.backgroundImage = '';
+    resetPoster();
     screens.result.classList.remove('reveal');
     showScreen('controls');
     setTimeout(() => spin(db), 120);
   };
   el.backBtn.onclick = () => {
-    el.monkWrap.classList.remove('picked', 'show');
-    el.posterFig.style.backgroundImage = '';
+    resetPoster();
     screens.result.classList.remove('reveal');
     sphere.setWords([IDLE]);
     showScreen('controls');
   };
   el.refreshBtn.onclick = () => {
-    el.monkWrap.classList.remove('picked', 'show');
+    resetPoster();
     sphere.setWords([IDLE]);
     showScreen('upload');
   };

@@ -53,7 +53,7 @@ html, body {
 
 #sphereWrap {
   position: fixed; inset: 0;
-  z-index: 1;
+  z-index: 2;                           /* above the poster backdrop, below the figure window */
   overflow: hidden;
   perspective-origin: 50% 50%;          /* perspective px is set from JS */
 }
@@ -91,41 +91,35 @@ html, body {
   pointer-events: none;
 }
 
-/* ── Figure mask layer ───────────────────────────────────────── */
+/* ── Poster backdrop + figure window ─────────────────────────── */
 
+/* Full-screen poster (red-tinted via a JS gradient), behind the text. Result only. */
+#posterBack {
+  position: fixed; inset: 0;
+  z-index: 1;
+  background-position: center; background-size: cover; background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 1s ease;
+  pointer-events: none;
+}
+#posterBack.show { opacity: 1; }
+
+/* Figure window — always present. Black silhouette by default; JS sets its
+   background to the poster (un-tinted, bright) on a draw → a clear window. */
 #monkWrap {
   position: fixed; inset: 0;
   z-index: 3;
-  opacity: 0;
-  transition: opacity .8s ease;
   pointer-events: none;
 }
-#monkWrap.show { opacity: 1; }
-
-.fig-cover, .fig-poster {
+.fig-window {
   position: absolute; inset: 0;
-  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
-  -webkit-mask-position: center; mask-position: center;
-  -webkit-mask-size: cover; mask-size: cover;
-  transition: opacity .9s ease;
-  filter: drop-shadow(0 0 7px var(--red)) drop-shadow(0 0 22px var(--red-glow));
-}
-
-/* Searching: bg-coloured figure punched into the text */
-.fig-cover {
-  background: var(--bg);
-  -webkit-mask-image: url(fig.png); mask-image: url(fig.png);
-}
-
-/* Picked: poster fills around a figure-shaped hole */
-.fig-poster {
+  background: #000;
   background-position: center; background-size: cover; background-repeat: no-repeat;
-  -webkit-mask-image: url(fig-inv.png); mask-image: url(fig-inv.png);
-  opacity: 0;
+  -webkit-mask: url(fig.png) center / cover no-repeat;
+  mask: url(fig.png) center / cover no-repeat;
+  transition: background-image .8s ease;
+  filter: drop-shadow(0 0 8px rgba(0,0,0,.55));
 }
-
-#monkWrap.picked .fig-cover  { opacity: 0; }
-#monkWrap.picked .fig-poster { opacity: 1; }
 
 /* ── Bottom veil ─────────────────────────────────────────────── */
 
@@ -289,7 +283,7 @@ select option {
 }
 
 .result-title {
-  font-family: var(--display);
+  font-family: var(--font);        /* plain Arial/system, like the logo */
   font-size: 6rem;                 /* JS shrinks to fit so it never wraps */
   font-weight: 900; letter-spacing: -.02em; line-height: .95;
   text-transform: uppercase; color: var(--text);
