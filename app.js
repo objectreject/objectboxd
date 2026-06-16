@@ -34,67 +34,86 @@ const screens = {
 
 // ── Text Sphere ───────────────────────────────────────────────────────────────
 
+// Concentric rings of curved text — the view from inside a sphere/dome.
+// Rings are sin-spaced (bunch toward the rim) and scale with radius for depth;
+// each ring spins at its own rate to give the warping, swirling motion.
+const SVGNS = 'http://www.w3.org/2000/svg';
+
 class TextSphere {
   constructor(container) {
     this.container = container;
-    this.spans = [];
-    this.pts = [];
+    this._words = ['OBJECTBOXD'];
+    this.rings = [];
     this.rot = 0;
     this.raf = null;
-    this._words = ['OBJECTBOXD'];
-    this.speed = 0.22;
+    this.speed = 0.11;          // base deg/frame
+    this._init();
+  }
+
+  _init() {
+    const VB = 1000, C = 500, RMAX = 730, N = 17;
+    const svg = document.createElementNS(SVGNS, 'svg');
+    svg.id = 'sphereSvg';
+    svg.setAttribute('viewBox', `0 0 ${VB} ${VB}`);
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+    const defs = document.createElementNS(SVGNS, 'defs');
+    svg.appendChild(defs);
+
+    for (let k = 1; k <= N; k++) {
+      const theta = (k / (N + 1)) * (Math.PI / 2);   // 0..~90°
+      const r = RMAX * Math.sin(theta);
+      const depth = r / RMAX;                          // 0 centre (far) … 1 rim (near)
+      const fontSize = 7 + depth * 30;
+
+      const id = `ring${k}`;
+      const path = document.createElementNS(SVGNS, 'path');
+      path.id = id;
+      path.setAttribute('fill', 'none');
+      path.setAttribute('d',
+        `M ${C - r} ${C} a ${r} ${r} 0 1 1 ${2 * r} 0 a ${r} ${r} 0 1 1 ${-2 * r} 0`);
+      defs.appendChild(path);
+
+      const g = document.createElementNS(SVGNS, 'g');
+      const text = document.createElementNS(SVGNS, 'text');
+      text.setAttribute('font-size', fontSize.toFixed(1));
+      text.setAttribute('opacity', (0.28 + depth * 0.62).toFixed(2));
+      const tp = document.createElementNS(SVGNS, 'textPath');
+      tp.setAttribute('href', `#${id}`);
+      tp.setAttributeNS('http://www.w3.org/1999/xlink', 'href', `#${id}`);
+      text.appendChild(tp);
+      g.appendChild(text);
+      svg.appendChild(g);
+
+      this.rings.push({ g, tp, fontSize, depth, circ: 2 * Math.PI * r, dir: k % 2 ? 1 : -1 });
+    }
+    this.container.appendChild(svg);
+    this._fill();
+  }
+
+  _fill() {
+    const base = this._words.join('  ·  ') + '  ·  ';
+    for (const ring of this.rings) {
+      const charW = ring.fontSize * 0.56;
+      const need = Math.max(1, Math.ceil(ring.circ / charW / base.length));
+      ring.tp.textContent = base.repeat(Math.min(need, 36));
+    }
   }
 
   setWords(words) {
     this._words = words.length ? words : ['OBJECTBOXD'];
-    this._build();
-  }
-
-  _build() {
-    this.spans.forEach(s => s.remove());
-    this.spans = []; this.pts = [];
-    const N = 72;
-    const phi = Math.PI * (3 - Math.sqrt(5));
-    for (let i = 0; i < N; i++) {
-      const y = 1 - (i / (N - 1)) * 2;
-      const r = Math.sqrt(Math.max(0, 1 - y * y));
-      const theta = phi * i;
-      const x = Math.cos(theta) * r;
-      const z = Math.sin(theta) * r;
-      const s = document.createElement('span');
-      s.className = 'sw';
-      s.textContent = this._words[i % this._words.length];
-      this.container.appendChild(s);
-      this.spans.push(s);
-      this.pts.push({ x, y, z, s });
-    }
+    this._fill();
   }
 
   _frame() {
-    this.rot += this.speed * Math.PI / 180;
-    const cosA = Math.cos(this.rot), sinA = Math.sin(this.rot);
-    const tilt = 0.28, cosT = Math.cos(tilt), sinT = Math.sin(tilt);
-    const W = window.innerWidth / 2, H = window.innerHeight / 2;
-    const R = Math.min(W, H) * 0.62;
-    const FOV = Math.min(W, H) * 1.8;
-    for (const { x, y, z, s } of this.pts) {
-      const rx = x * cosA + z * sinA, ry = y, rz = -x * sinA + z * cosA;
-      const ty = ry * cosT - rz * sinT, tz = ry * sinT + rz * cosT;
-      const scale = FOV / (FOV + tz * R);
-      const px = W + rx * R * scale, py = H + ty * R * scale;
-      const depth = (tz + 1) / 2;
-      // Orient each word tangent to the circle around centre → curves like the inside of a sphere
-      let deg = Math.atan2(py - H, px - W) * 180 / Math.PI + 90;
-      if (deg > 90) deg -= 180; else if (deg < -90) deg += 180; // keep words upright-ish
-      s.style.cssText = `left:${px.toFixed(1)}px;top:${py.toFixed(1)}px;transform:translate(-50%,-50%) rotate(${deg.toFixed(1)}deg);opacity:${(0.08 + depth * 0.86).toFixed(2)};font-size:${(0.55 + depth * 0.65).toFixed(2)}rem;z-index:${(depth * 10)|0}`;
+    this.rot += this.speed;
+    for (const ring of this.rings) {
+      const a = this.rot * ring.dir * (0.45 + ring.depth);
+      ring.g.setAttribute('transform', `rotate(${a.toFixed(2)} 500 500)`);
     }
     this.raf = requestAnimationFrame(() => this._frame());
   }
 
-  start() {
-    if (!this.pts.length) this._build();
-    if (!this.raf) this._frame();
-  }
+  start() { if (!this.raf) this._frame(); }
 
   flashWords(wordArrays, doneCallback) {
     let i = 0, interval = 45;
@@ -164,15 +183,45 @@ function parseListV7(text) {
   return films.length ? { name: listName, films } : null;
 }
 
+// Simple root CSV (watchlist.csv): "Date,Name,Year,Letterboxd URI"
+function parseSimple(text) {
+  const lines = text.replace(/^﻿/, '').split(/\r?\n/);
+  if (!lines.length) return null;
+  const h = parseLine(lines[0]).map(x => x.toLowerCase().trim());
+  const ni = h.indexOf('name');
+  const yi = h.indexOf('year');
+  const ui = h.findIndex(x => x.includes('uri') || x === 'url');
+  if (ni < 0 || ui < 0) return null;
+  const films = lines.slice(1)
+    .filter(l => l.trim())
+    .map(line => {
+      const f = parseLine(line);
+      const name = f[ni]?.trim() || '', year = yi >= 0 ? f[yi]?.trim() || '' : '', url = f[ui]?.trim() || '';
+      return (name && url) ? { name, year, url } : null;
+    })
+    .filter(Boolean);
+  return films.length ? { films } : null;
+}
+
 const SKIP = new Set([
   'profile.csv','ratings.csv','diary.csv','reviews.csv',
-  'comments.csv','watchlist.csv','watched.csv',
-  'films.csv','likes.csv',
+  'comments.csv','watched.csv','films.csv','likes.csv',
 ]);
 
 function ingest(filename, text, db) {
-  if (SKIP.has(filename)) return;
   const clean = text.replace(/^﻿/, '');
+
+  // Watchlist is a root CSV in the simple format, not a list export
+  if (filename === 'watchlist.csv') {
+    const r = parseSimple(clean);
+    if (r) {
+      console.log(`[objectboxd] "Watchlist": ${r.films.length} films`);
+      db.lists.push({ name: 'Watchlist', films: r.films });
+    }
+    return;
+  }
+
+  if (SKIP.has(filename)) return;
   if (!clean.startsWith('Letterboxd list export')) return;
   const result = parseListV7(clean);
   if (!result) return;
@@ -198,6 +247,8 @@ async function processFiles(files) {
   }
   if (!db.lists.length)
     throw new Error('No lists found — drop your full Letterboxd export .zip');
+  // Watchlist first, then the rest in file order
+  db.lists.sort((a, b) => (a.name === 'Watchlist' ? -1 : b.name === 'Watchlist' ? 1 : 0));
   return db;
 }
 
