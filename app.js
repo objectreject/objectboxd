@@ -43,8 +43,10 @@ class TextSphere {
   constructor(container) {
     this.container = container;
     this._words = ['OBJECTBOXD'];
+    this.inside = /\b(inside|concave)\b/.test(location.search);   // ?inside to try concave
     this.globe = document.createElement('div');
     this.globe.id = 'sphereGlobe';
+    this.globe.classList.toggle('inside', this.inside);
     this.container.appendChild(this.globe);
     this._build();
     let t;
@@ -54,30 +56,30 @@ class TextSphere {
   _build() {
     const vmin = Math.min(window.innerWidth, window.innerHeight);
     this.R = vmin * 0.5;
-    // close camera (P just above R) → strong, enveloping fisheye
-    this.container.style.perspective = `${(vmin * 0.66).toFixed(0)}px`;
+    // inside: camera within the sphere (concave wall). outside: close camera, strong fisheye.
+    this.container.style.perspective = `${(vmin * (this.inside ? 0.42 : 0.66)).toFixed(0)}px`;
     this._render();
   }
 
   _render() {
     const R = this.R;
-    const fontSize = Math.max(12, R * 0.05);
+    const fontSize = Math.max(10, R * 0.04);                   // smaller → denser
     this.globe.style.setProperty('--fs', `${fontSize.toFixed(1)}px`);
 
     const str = (this._words.join(' · ') + ' · ').toUpperCase();
-    const latMax = 82, N = 21;        // degrees of sphere shown vertically, parallels
+    const latMax = 84, N = 27;        // more parallels, more of the sphere
     const frag = document.createDocumentFragment();
     let gi = 0;
 
     for (let i = 0; i < N; i++) {
       const phi = -latMax + 2 * latMax * i / (N - 1);          // latitude (deg)
       const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
-      const nChars = Math.max(5, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.62)), 80));
+      const nChars = Math.max(5, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.6)), 120));
 
       // each parallel is its own ring, spun independently and alternating direction
       const ring = document.createElement('div');
       ring.className = 'ring';
-      const dur = 150 + i * 7;                                 // slow, slight per-ring variation
+      const dur = 150 + i * 6;                                 // slow, slight per-ring variation
       ring.style.animation = `ringSpin ${dur}s linear infinite ${i % 2 ? 'reverse' : 'normal'}`;
 
       for (let k = 0; k < nChars; k++) {
@@ -87,8 +89,10 @@ class TextSphere {
         const s = document.createElement('span');
         s.className = 'glyph';
         s.textContent = ch;
+        // inside view sees the far wall, where text reads mirrored — pre-flip each glyph
+        const flip = this.inside ? ' scaleX(-1)' : '';
         s.style.transform =
-          `rotateY(${lam.toFixed(1)}deg) rotateX(${(-phi).toFixed(1)}deg) translateZ(${R.toFixed(1)}px) translate(-50%,-50%)`;
+          `rotateY(${lam.toFixed(1)}deg) rotateX(${(-phi).toFixed(1)}deg) translateZ(${R.toFixed(1)}px)${flip} translate(-50%,-50%)`;
         ring.appendChild(s);
       }
       frag.appendChild(ring);
@@ -301,11 +305,33 @@ async function spin(db) {
   screens.result.classList.remove('reveal');
   showScreen('result');
   void screens.result.offsetWidth;
+  fitResultTitle();
   screens.result.classList.add('reveal');
 
   spinning = false;
   el.drawBtn.disabled = false;
 }
+
+// Shrink the result title until it fits on one line (long names spill otherwise)
+function fitResultTitle() {
+  const t = el.resultTitle;
+  if (!t.textContent) return;
+  const avail = Math.min(740, window.innerWidth - 64);
+  let fs = Math.min(window.innerWidth * 0.12, 132);
+  t.style.fontSize = `${fs}px`;
+  let guard = 0;
+  while (t.scrollWidth > avail && fs > 16 && guard++ < 80) {
+    fs *= 0.93;
+    t.style.fontSize = `${fs}px`;
+  }
+}
+// Re-fit when the font finishes loading or the window resizes
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitResultTitle());
+let _fitT;
+window.addEventListener('resize', () => {
+  if (screens.result.classList.contains('hidden')) return;
+  clearTimeout(_fitT); _fitT = setTimeout(fitResultTitle, 150);
+});
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 

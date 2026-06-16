@@ -1,5 +1,11 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+@font-face {
+  font-family: 'FlorDeRuina';
+  src: url('FlorDeRuina-Ruina.woff2') format('woff2');
+  font-display: swap;
+}
+
 :root {
   --bg:         #b10411;            /* red screen */
   --red:        #1f0003;            /* near-black accent */
@@ -10,6 +16,7 @@
   --text:       #0a0000;            /* black primary text */
   --muted:      rgba(28, 0, 0, 0.62);
   --font:       -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --display:    'FlorDeRuina', var(--font);
 }
 
 html, body {
@@ -69,7 +76,7 @@ html, body {
 
 .glyph {
   position: absolute; left: 0; top: 0;
-  font-family: var(--font);
+  font-family: var(--display);
   font-weight: 700;
   font-size: var(--fs, 22px);
   color: var(--red-mid);
@@ -78,6 +85,11 @@ html, body {
   -webkit-backface-visibility: hidden;
   white-space: nowrap;
   pointer-events: none;
+}
+/* inside / concave view shows the far wall — let glyph backs render */
+#sphereGlobe.inside .glyph {
+  backface-visibility: visible;
+  -webkit-backface-visibility: visible;
 }
 
 /* ── Figure mask layer ───────────────────────────────────────── */
@@ -280,11 +292,12 @@ select option {
 }
 
 .result-title {
-  font-size: clamp(2.6rem, 8vw, 7.5rem);
-  font-weight: 900; letter-spacing: -.04em; line-height: .9;
+  font-family: var(--display);
+  font-size: 6rem;                 /* JS shrinks to fit so it never wraps */
+  font-weight: 900; letter-spacing: -.02em; line-height: .95;
   text-transform: uppercase; color: var(--text);
-  margin-bottom: 24px; hyphens: auto; word-break: break-word;
-  text-shadow: 0 2px 40px rgba(0,0,0,.8);
+  margin-bottom: 24px; white-space: nowrap;
+  text-shadow: 0 2px 40px rgba(0,0,0,.35);
 }
 
 .result-actions {
