@@ -56,9 +56,15 @@ html, body {
   z-index: 1;
   overflow: hidden;
   perspective-origin: 50% 50%;          /* perspective px is set from JS */
-  /* fade the text out toward the rim of the sphere (round, not oval) */
-  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 58%, transparent 100%);
-  mask-image: radial-gradient(circle at 50% 50%, #000 58%, transparent 100%);
+}
+/* fade the text into the background toward the rim — cheaper than masking the
+   animated 3D content every frame (mask was the likely cause of slow lag) */
+#sphereWrap::after {
+  content: '';
+  position: absolute; inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, transparent 46%, var(--bg) 92%);
 }
 
 #sphereGlobe {
@@ -70,7 +76,6 @@ html, body {
 .ring {
   position: absolute; left: 0; top: 0;
   transform-style: preserve-3d;
-  will-change: transform;
 }
 @keyframes ringSpin { to { transform: rotateY(360deg); } }
 
@@ -80,7 +85,6 @@ html, body {
   font-weight: 700;
   font-size: var(--fs, 22px);
   color: var(--red-mid);
-  text-shadow: 0 0 5px var(--red-glow);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   white-space: nowrap;
