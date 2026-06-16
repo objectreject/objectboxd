@@ -132,9 +132,9 @@ html, body {
 /* small, fixed to center-bottom, whole figure shown (contain, no edge crop) */
 .fig-window {
   position: absolute;
-  left: 50%; bottom: 0;
+  left: 50%; bottom: -1%;            /* slight overshoot so it covers the very bottom edge */
   transform: translateX(-50%);
-  width: min(68vw, 880px);
+  width: min(61vw, 800px);
   aspect-ratio: 1292 / 733;          /* tight-cropped silhouette */
   -webkit-mask: url(fig.png?v=2) bottom center / contain no-repeat;
   mask: url(fig.png?v=2) bottom center / contain no-repeat;

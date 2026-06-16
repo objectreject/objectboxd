@@ -194,13 +194,27 @@ function parseSimple(text) {
   return films.length ? { films } : null;
 }
 
+// Key a film for the watched-exclusion set (boxd.it vs letterboxd.com URLs
+// differ across exports, so match on name+year instead of URL)
+const watchedKey = (name, year) => `${(name || '').trim().toLowerCase()}|${(year || '').trim()}`;
+
 const SKIP = new Set([
   'profile.csv','ratings.csv','diary.csv','reviews.csv',
-  'comments.csv','watched.csv','films.csv','likes.csv',
+  'comments.csv','films.csv','likes.csv',
 ]);
 
 function ingest(filename, text, db) {
   const clean = text.replace(/^﻿/, '');
+
+  // Watched: not a selectable list — just collect keys so we can exclude them
+  if (filename === 'watched.csv') {
+    const r = parseSimple(clean);
+    if (r) {
+      r.films.forEach(f => db.watched.add(watchedKey(f.name, f.year)));
+      console.log(`[objectboxd] watched: ${r.films.length} films (excluded from picks)`);
+    }
+    return;
+  }
 
   // Watchlist is a root CSV in the simple format, not a list export
   if (filename === 'watchlist.csv') {
@@ -224,7 +238,7 @@ function ingest(filename, text, db) {
 }
 
 async function processFiles(files) {
-  const db = { lists: [] };
+  const db = { lists: [], watched: new Set() };
   for (const file of files) {
     if (file.name.endsWith('.zip')) {
       const zip = await JSZip.loadAsync(file);
@@ -268,7 +282,10 @@ function showScreen(name) {
 // ── Select population ─────────────────────────────────────────────────────────
 
 function slugify(s) { return s.replace(/[^a-z0-9]+/gi, '-').toLowerCase().replace(/^-|-$/g, ''); }
-function getFilms(db) { return db.lists.find(l => slugify(l.name) === el.sourceSelect.value)?.films ?? []; }
+function getFilms(db) {
+  const films = db.lists.find(l => slugify(l.name) === el.sourceSelect.value)?.films ?? [];
+  return films.filter(f => !db.watched.has(watchedKey(f.name, f.year)));   // drop already-watched
+}
 function wordsFrom(str) { const w = str.toUpperCase().split(/\s+/).filter(Boolean); return w.length ? w : ['OBJECTBOXD']; }
 
 function populateSelect(db) {
