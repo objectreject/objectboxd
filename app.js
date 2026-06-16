@@ -34,98 +34,65 @@ const screens = {
 
 // ── Text Sphere ───────────────────────────────────────────────────────────────
 
-// The view onto the inside of a sphere. Text runs along the sphere's parallels
-// (lines of latitude), each projected to a curved arc: the equator is straight,
-// arcs bow further from centre and bunch toward the poles. The "spin" scrolls
-// text ALONG each path (one startOffset number per line) — no 3D compositing,
-// so it stays smooth.
-const SVGNS = 'http://www.w3.org/2000/svg';
-
+// A true 3D sphere of text. Each character is its own element placed on the
+// sphere's surface (rotateY · rotateX · translateZ); the wrapper's CSS
+// perspective then scales every glyph by its depth — real foreshortening,
+// bigger toward the viewer, smaller as the surface curves away. The spin is a
+// single GPU-composited rotateY on the globe, so it stays smooth.
 class TextSphere {
   constructor(container) {
     this.container = container;
     this._words = ['OBJECTBOXD'];
-    this.lines = [];
-    this.off = 0;
-    this.raf = null;
-    this.svg = document.createElementNS(SVGNS, 'svg');
-    this.svg.id = 'sphereSvg';
-    this.svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
-    this.container.appendChild(this.svg);
+    this.globe = document.createElement('div');
+    this.globe.id = 'sphereGlobe';
+    this.container.appendChild(this.globe);
     this._build();
     let t;
     window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => this._build(), 200); });
-    this._frame();
   }
 
   _build() {
-    while (this.svg.firstChild) this.svg.removeChild(this.svg.firstChild);
-    this.lines = [];
-    const W = 1000, H = 800, cx = W / 2, cy = H / 2;
-    this.svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    const defs = document.createElementNS(SVGNS, 'defs');
-    this.svg.appendChild(defs);
-
-    const C = 1.7, f = 640, S = 48;
-    const latMax = 36 * Math.PI / 180, lamMax = 50 * Math.PI / 180, N = 11;
-
-    for (let i = 0; i < N; i++) {
-      const phi = -latMax + 2 * latMax * i / (N - 1);     // latitude of this parallel
-      const cphi = Math.cos(phi), sphi = Math.sin(phi);
-      let d = '';
-      for (let j = 0; j <= S; j++) {
-        const lam = -lamMax + 2 * lamMax * j / S;          // longitude across the front
-        const x = cphi * Math.sin(lam), y = sphi, z = cphi * Math.cos(lam);
-        const sx = cx + f * x / (C - z), sy = cy - f * y / (C - z);
-        d += (j ? 'L' : 'M') + sx.toFixed(1) + ' ' + sy.toFixed(1) + ' ';
-      }
-
-      const id = `par${i}`;
-      const path = document.createElementNS(SVGNS, 'path');
-      path.id = id; path.setAttribute('fill', 'none'); path.setAttribute('d', d);
-      defs.appendChild(path);
-
-      const mag = f / (C - cphi);
-      const fontSize = Math.max(11, mag * 0.042);
-      const frac = Math.abs(phi) / latMax;                 // 0 equator … 1 pole
-      const text = document.createElementNS(SVGNS, 'text');
-      text.setAttribute('font-size', fontSize.toFixed(1));
-      text.setAttribute('opacity', (0.92 - 0.5 * frac).toFixed(2));
-      const tp = document.createElementNS(SVGNS, 'textPath');
-      tp.setAttribute('href', `#${id}`);
-      tp.setAttributeNS('http://www.w3.org/1999/xlink', 'href', `#${id}`);
-      text.appendChild(tp);
-      this.svg.appendChild(text);
-
-      this.lines.push({ tp, fontSize, len: path.getTotalLength(), unit: 0 });
-    }
-    this._fill();
+    const vmin = Math.min(window.innerWidth, window.innerHeight);
+    this.R = vmin * 0.52;
+    this.container.style.perspective = `${(vmin * 0.95).toFixed(0)}px`;
+    this._render();
   }
 
-  _fill() {
-    const base = this._words.join('  ·  ') + '  ·  ';
-    for (const ln of this.lines) {
-      const charW = ln.fontSize * 0.56;
-      ln.unit = base.length * charW;
-      const need = Math.max(3, Math.ceil(ln.len / ln.unit) + 2);
-      ln.tp.textContent = base.repeat(Math.min(need, 18));
+  _render() {
+    const R = this.R;
+    const fontSize = Math.max(13, R * 0.058);
+    this.globe.style.setProperty('--fs', `${fontSize.toFixed(1)}px`);
+
+    const str = (this._words.join(' · ') + ' · ').toUpperCase();
+    const latMax = 74, N = 13;        // degrees of sphere shown vertically, parallels
+    const frag = document.createDocumentFragment();
+    let gi = 0;
+
+    for (let i = 0; i < N; i++) {
+      const phi = -latMax + 2 * latMax * i / (N - 1);          // latitude (deg)
+      const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
+      const nChars = Math.max(6, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.62)), 84));
+      for (let k = 0; k < nChars; k++) {
+        const ch = str[gi++ % str.length];
+        if (ch === ' ') continue;                              // skip spaces (gaps, fewer nodes)
+        const lam = 360 * k / nChars;                          // longitude (deg)
+        const s = document.createElement('span');
+        s.className = 'glyph';
+        s.textContent = ch;
+        s.style.transform =
+          `rotateY(${lam.toFixed(1)}deg) rotateX(${(-phi).toFixed(1)}deg) translateZ(${R.toFixed(1)}px) translate(-50%,-50%)`;
+        frag.appendChild(s);
+      }
     }
+    this.globe.replaceChildren(frag);
   }
 
   setWords(words) {
     this._words = words.length ? words : ['OBJECTBOXD'];
-    this._fill();
+    this._render();
   }
 
-  _frame() {
-    this.off += 0.5;
-    for (const ln of this.lines) {
-      ln.tp.setAttribute('startOffset', (ln.unit ? -(this.off % ln.unit) : 0).toFixed(1));
-    }
-    this.raf = requestAnimationFrame(() => this._frame());
-  }
-
-  start() { /* rAF started in constructor */ }
+  start() { /* spin is a CSS animation */ }
 }
 
 const sphere = new TextSphere(el.sphereWrap);

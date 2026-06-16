@@ -48,20 +48,31 @@ html, body {
   position: fixed; inset: 0;
   z-index: 1;
   overflow: hidden;
+  perspective-origin: 50% 50%;          /* perspective px is set from JS */
+  /* fade the text out toward the rim of the sphere */
+  -webkit-mask-image: radial-gradient(ellipse 86% 90% at 50% 50%, #000 44%, transparent 100%);
+  mask-image: radial-gradient(ellipse 86% 90% at 50% 50%, #000 44%, transparent 100%);
 }
 
-#sphereSvg {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  /* fade the text out toward the rim of the sphere */
-  -webkit-mask-image: radial-gradient(ellipse 82% 86% at 50% 50%, #000 50%, transparent 100%);
-  mask-image: radial-gradient(ellipse 82% 86% at 50% 50%, #000 50%, transparent 100%);
+#sphereGlobe {
+  position: absolute; left: 50%; top: 50%;
+  transform-style: preserve-3d;
+  animation: globeSpin 48s linear infinite;
+  will-change: transform;
 }
-#sphereSvg text {
-  fill: var(--red-mid);
+@keyframes globeSpin { to { transform: rotateY(360deg); } }
+
+.glyph {
+  position: absolute; left: 0; top: 0;
   font-family: var(--font);
   font-weight: 700;
-  letter-spacing: .5px;
+  font-size: var(--fs, 22px);
+  color: var(--red-mid);
+  text-shadow: 0 0 6px var(--red-glow);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 /* ── Figure mask layer ───────────────────────────────────────── */
