@@ -145,6 +145,7 @@ html, body {
   display: flex; flex-direction: column;
 }
 .screen.hidden { display: none; }
+.hidden { display: none; }
 
 /* ── ① Upload ────────────────────────────────────────────────── */
 

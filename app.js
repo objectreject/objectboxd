@@ -63,11 +63,11 @@ class TextSphere {
 
   _render() {
     const R = this.R;
-    const fontSize = Math.max(20, R * 0.135);                  // big text, fuller fill
+    const fontSize = Math.max(18, R * 0.12);                   // big text, fuller fill
     this.globe.style.setProperty('--fs', `${fontSize.toFixed(1)}px`);
 
     const str = (this._words.join('   ') + '   ').toUpperCase();
-    const latMax = 50, N = 7;         // few parallels, packed closer together
+    const latMax = 58, N = 7;         // few parallels, a touch more spread (less overlap)
     // inside view: glyphs sit on the FAR wall facing the camera (translateZ -R);
     // the near hemisphere is back-face culled, so we see the wrapping inner grid.
     // longitude runs the opposite way from the outside, so reverse it to keep text legible.
@@ -88,7 +88,7 @@ class TextSphere {
 
       for (let k = 0; k < nChars; k++) {
         const ch = str[gi++ % str.length];
-        if (!/[A-Z0-9]/.test(ch)) continue;                    // letters only — avoids missing-glyph blocks
+        if (ch === ' ') continue;                              // spaces become gaps; keep letters + punctuation
         const lam = lamDir * 360 * k / nChars;                 // longitude (deg)
         const s = document.createElement('span');
         s.className = 'glyph';
