@@ -8,71 +8,150 @@
 </head>
 <body>
 
-  <!-- persistent overlays -->
   <div class="grain" aria-hidden="true"></div>
-  <div class="scanlines" aria-hidden="true"></div>
-  <div class="bg-poster" id="bgPoster" aria-hidden="true"></div>
-  <div class="vignette" aria-hidden="true"></div>
 
+  <!-- Rotating sphere of text -->
+  <div id="sphereWrap" aria-hidden="true"></div>
+
+  <!-- Monk silhouette — poster fills it via SVG clipPath -->
+  <div id="monkWrap" aria-hidden="true">
+    <svg id="monkSvg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <clipPath id="monkClip">
+          <!-- Head -->
+          <ellipse cx="200" cy="63" rx="42" ry="48"/>
+          <!-- Body + outstretched arms -->
+          <path d="
+            M 183 108
+            C 172 114 158 123 148 131
+            C 116 124 82 124 48 152
+            L 12 176
+            C 8 182 8 190 14 194
+            L 26 197
+            C 62 170 110 152 152 152
+            L 152 366
+            C 150 376 147 387 145 396
+            L 137 590
+            L 158 590
+            C 165 510 172 446 178 398
+            C 186 376 193 364 200 360
+            C 207 364 214 376 222 398
+            C 228 446 235 510 242 590
+            L 263 590
+            L 255 396
+            C 253 387 250 376 248 366
+            L 248 152
+            C 290 152 338 170 374 197
+            L 386 194
+            C 392 190 392 182 388 176
+            L 352 152
+            C 318 124 284 124 252 131
+            C 242 123 228 114 217 108
+            Z
+          "/>
+        </clipPath>
+        <!-- Red glow filter for silhouette outline -->
+        <filter id="edgeGlow" x="-15%" y="-15%" width="130%" height="130%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+          <feFlood flood-color="#cc0000" flood-opacity="0.9" result="col"/>
+          <feComposite in="col" in2="blur" operator="in" result="glow"/>
+          <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- Poster art clipped to silhouette -->
+      <image id="posterImg" href="" x="0" y="0" width="400" height="600"
+             clip-path="url(#monkClip)" preserveAspectRatio="xMidYMid slice"/>
+
+      <!-- Silhouette outline (glowing, visible when no poster) -->
+      <g id="monkOutline" fill="none" stroke="#880000" stroke-width="1.5"
+         opacity="0.6" filter="url(#edgeGlow)">
+        <ellipse cx="200" cy="63" rx="42" ry="48"/>
+        <path d="
+          M 183 108
+          C 172 114 158 123 148 131
+          C 116 124 82 124 48 152
+          L 12 176
+          C 8 182 8 190 14 194
+          L 26 197
+          C 62 170 110 152 152 152
+          L 152 366
+          C 150 376 147 387 145 396
+          L 137 590
+          L 158 590
+          C 165 510 172 446 178 398
+          C 186 376 193 364 200 360
+          C 207 364 214 376 222 398
+          C 228 446 235 510 242 590
+          L 263 590
+          L 255 396
+          C 253 387 250 376 248 366
+          L 248 152
+          C 290 152 338 170 374 197
+          L 386 194
+          C 392 190 392 182 388 176
+          L 352 152
+          C 318 124 284 124 252 131
+          C 242 123 228 114 217 108
+          Z
+        "/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Gradient veil over lower portion -->
+  <div class="veil" aria-hidden="true"></div>
+
+  <!-- UI Screens -->
   <main id="app">
 
     <!-- ① UPLOAD -->
     <section class="screen" id="screenUpload">
-      <div class="upload-logo">objectboxd</div>
-      <div class="dropzone" id="dropzone" role="button" tabindex="0"
-           aria-label="Upload Letterboxd export">
-        <div class="dz-inner">
-          <div class="dz-arrow">↓</div>
-          <p class="dz-headline">drop your<br>letterboxd export</p>
-          <p class="dz-sub">Settings → Data → Export your data<br>accepts .zip or individual .csv files</p>
-          <span class="dz-or">— or —</span>
-          <button class="dz-browse" id="dzBrowse" type="button">browse files</button>
-        </div>
+      <p class="upload-hint">drop your letterboxd export<br>
+        <span>settings → data → export your data · .zip or .csv</span>
+      </p>
+      <div id="dropzone" class="dropzone" role="button" tabindex="0"
+           aria-label="Upload Letterboxd export file">
         <input type="file" id="fileInput" accept=".zip,.csv" multiple />
       </div>
+      <div class="upload-logo">objectboxd</div>
       <p class="upload-error hidden" id="uploadError" role="alert"></p>
     </section>
 
     <!-- ② CONTROLS -->
     <section class="screen hidden" id="screenControls">
-      <header class="ctrl-header">
+      <header class="ctrl-top">
         <span class="ctrl-logo">objectboxd</span>
-        <div class="ctrl-meta">
-          <span id="lastUpdated" class="ctrl-updated"></span>
-          <button class="ctrl-refresh" id="refreshBtn" type="button" title="Update data">↑ update</button>
+        <div class="ctrl-right">
+          <span id="lastUpdated" class="ctrl-date"></span>
+          <button class="btn-ghost" id="refreshBtn">↑ update</button>
         </div>
       </header>
-      <div class="ctrl-body">
-        <div class="select-wrap">
+      <div class="ctrl-mid">
+        <div class="select-row">
           <select id="sourceSelect" aria-label="Choose a list"></select>
-          <span class="select-count" id="sourceCount"></span>
+          <span id="sourceCount" class="source-count"></span>
         </div>
-        <button class="spin-btn" id="spinBtn" type="button">SPIN</button>
       </div>
+      <button class="spin-btn" id="spinBtn">SPIN</button>
     </section>
 
-    <!-- ③ RESULT (overlaid on top of poster bg) -->
+    <!-- ③ RESULT -->
     <section class="screen hidden" id="screenResult">
-      <button class="result-back" id="backBtn" type="button">← back</button>
+      <button class="btn-ghost result-back" id="backBtn">← back</button>
       <div class="result-body">
         <div class="result-year" id="resultYear"></div>
         <h2 class="result-title" id="resultTitle"></h2>
         <div class="result-actions">
           <a class="result-lb" id="resultLink" href="#" target="_blank" rel="noopener">
-            View on Letterboxd ↗
+            Letterboxd ↗
           </a>
-          <button class="result-again" id="spinAgain" type="button">spin again</button>
+          <button class="result-again" id="spinAgain">again</button>
         </div>
       </div>
     </section>
 
   </main>
-
-  <!-- SPINNING OVERLAY (shown over any screen) -->
-  <div class="spin-overlay hidden" id="spinOverlay" aria-live="assertive">
-    <div class="spin-flash" id="spinFlash"></div>
-    <div class="spin-bar" id="spinBar"><div class="spin-bar-fill" id="spinBarFill"></div></div>
-  </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
     integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
