@@ -48,26 +48,16 @@ html, body {
   position: fixed; inset: 0;
   z-index: 1;
   overflow: hidden;
-  perspective: 600px;            /* close camera → strong foreshortening into the bowl */
-  perspective-origin: 50% 50%;
 }
 
-/* The bowl of rings, spun by one GPU animation */
-#sphereSpin {
-  position: absolute; left: 50%; top: 50%;
-  transform-style: preserve-3d;
-  animation: sphereSpin 60s linear infinite;
-  will-change: transform;
+#sphereSvg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  /* fade the text out toward the rim of the sphere */
+  -webkit-mask-image: radial-gradient(ellipse 82% 86% at 50% 50%, #000 50%, transparent 100%);
+  mask-image: radial-gradient(ellipse 82% 86% at 50% 50%, #000 50%, transparent 100%);
 }
-@keyframes sphereSpin {
-  from { transform: rotateZ(0deg); }
-  to   { transform: rotateZ(360deg); }
-}
-
-#sphereSpin .ring {
-  position: absolute; left: 0; top: 0;
-}
-#sphereSpin text {
+#sphereSvg text {
   fill: var(--red-mid);
   font-family: var(--font);
   font-weight: 700;
