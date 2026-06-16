@@ -57,13 +57,13 @@ class TextSphere {
     this.R = vmin * 0.62;                                       // larger → zoomed in
     // inside: camera near the centre (small perspective) → strong barrel fisheye of the far wall.
     // convex: camera outside, looking at the ball.
-    this.container.style.perspective = `${(vmin * (this.inside ? 0.26 : 0.66)).toFixed(0)}px`;
+    this.container.style.perspective = `${(vmin * (this.inside ? 0.22 : 0.66)).toFixed(0)}px`;
     this._render();
   }
 
   _render() {
     const R = this.R;
-    const fontSize = Math.max(18, R * 0.12);                   // big text, fuller fill
+    const fontSize = Math.max(22, R * 0.15);                   // bigger text
     this.globe.style.setProperty('--fs', `${fontSize.toFixed(1)}px`);
 
     const str = (this._words.join('   ') + '   ').toUpperCase();
@@ -89,7 +89,7 @@ class TextSphere {
       for (let k = 0; k < nChars; k++) {
         const ch = str[gi++ % str.length];
         if (ch === ' ') continue;                              // spaces become gaps; keep letters + punctuation
-        const lam = lamDir * 360 * k / nChars;                 // longitude (deg)
+        const lam = lamDir * 360 * k / nChars + 180;           // +180 hides the loop seam at the back
         const s = document.createElement('span');
         s.className = 'glyph';
         s.textContent = ch;
