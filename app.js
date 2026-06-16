@@ -309,6 +309,7 @@ async function spin(db) {
     el.figWindow.style.backgroundImage = `url("${posterUrl}")`;                 // fills the figure, crossfades in
     el.figWindow.classList.add('revealed');
   }
+  document.body.classList.add('result-mode');                                   // flip to black bg / red text
 
   el.resultYear.textContent = picked.year || '';
   el.resultTitle.textContent = picked.name;
@@ -351,6 +352,7 @@ window.addEventListener('resize', () => {
 function resetPoster() {
   el.figWindow.classList.remove('revealed');     // fade poster back out to the black silhouette
   el.posterBack.classList.remove('show');
+  document.body.classList.remove('result-mode'); // flip back to red bg / black text
 }
 
 function boot(db) {

@@ -22,12 +22,26 @@
   --display:    'FlorDeRuina', var(--font);
 }
 
+/* Result screen flips the palette: black background, red text.
+   Applied to <body> only while a film result is showing. */
+body.result-mode {
+  --bg:         #050404;
+  --text:       #d6201a;
+  --red:        #c41810;
+  --red-mid:    #e0241c;
+  --red-bright: #ff4030;
+  --red-dim:    rgba(224, 40, 30, 0.5);
+  --red-glow:   rgba(224, 40, 30, 0.4);
+  --muted:      rgba(224, 120, 110, 0.7);
+}
+
 html, body {
   width: 100%; height: 100%;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font);
   overflow: hidden;
+  transition: background-color .8s ease;
 }
 
 /* ── Grain ───────────────────────────────────────────────────── */
@@ -88,6 +102,7 @@ html, body {
   font-weight: 700;
   font-size: var(--fs, 22px);
   color: var(--red-mid);
+  transition: color .8s ease;          /* smooth flip black→red on result */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   white-space: nowrap;
@@ -139,12 +154,15 @@ html, body {
   position: fixed; bottom: 0; left: 0; right: 0;
   height: 55%;
   background: linear-gradient(to top,
-    rgba(120,2,11,.97) 0%,
-    rgba(120,2,11,.7) 40%,
+    rgba(0,0,0,.85) 0%,
+    rgba(0,0,0,.55) 40%,
     transparent 100%);
   z-index: 4;
   pointer-events: none;
+  opacity: 0;                 /* only on the result screen (title legibility) */
+  transition: opacity .8s ease;
 }
+body.result-mode .veil { opacity: 1; }
 
 /* ── Screens ─────────────────────────────────────────────────── */
 
