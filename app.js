@@ -307,6 +307,7 @@ async function spin(db) {
   const posterUrl = await fetchPoster(picked.url);
   if (posterUrl) {
     el.figWindow.style.backgroundImage = `url("${posterUrl}")`;                 // bright clear window
+    el.figWindow.classList.add('revealed');                                     // crossfade in
     el.posterBack.style.backgroundImage =                                       // full-screen, red-tinted
       `linear-gradient(rgba(177,4,17,.5), rgba(177,4,17,.5)), url("${posterUrl}")`;
     el.posterBack.classList.add('show');
@@ -351,9 +352,8 @@ window.addEventListener('resize', () => {
 
 // back to the idle state: figure → black silhouette, drop the poster backdrop
 function resetPoster() {
-  el.figWindow.style.backgroundImage = '';
+  el.figWindow.classList.remove('revealed');     // fade poster back out to the black silhouette
   el.posterBack.classList.remove('show');
-  el.posterBack.style.backgroundImage = '';
 }
 
 function boot(db) {

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>objectboxd</title>
-  <link rel="stylesheet" href="style.css?v=24" />
+  <link rel="stylesheet" href="style.css?v=25" />
 </head>
 <body>
 
@@ -16,10 +16,11 @@
   <!-- Rotating sphere of text -->
   <div id="sphereWrap" aria-hidden="true"></div>
 
-  <!-- Figure window (exact silhouette from fig.png):
-       idle = solid black silhouette · result = bright clear window into the poster -->
+  <!-- Figure (exact silhouette from fig.png), small, fixed center-bottom:
+       black silhouette always; poster layer crossfades in on a draw -->
   <div id="monkWrap" aria-hidden="true">
-    <div class="fig-window" id="figWindow"></div>
+    <div class="fig-window fig-black"></div>
+    <div class="fig-window fig-poster" id="figWindow"></div>
   </div>
 
   <!-- Gradient veil over lower portion -->
@@ -76,6 +77,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
     integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="app.js?v=24"></script>
+  <script src="app.js?v=25"></script>
 </body>
 </html>
