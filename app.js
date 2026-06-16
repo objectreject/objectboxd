@@ -57,7 +57,7 @@ class TextSphere {
     this.R = vmin * 0.62;                                       // larger → zoomed in
     // inside: camera near the centre (small perspective) → strong barrel fisheye of the far wall.
     // convex: camera outside, looking at the ball.
-    this.container.style.perspective = `${(vmin * (this.inside ? 0.22 : 0.66)).toFixed(0)}px`;
+    this.container.style.perspective = `${(vmin * (this.inside ? 0.28 : 0.66)).toFixed(0)}px`;
     this._render();
   }
 
@@ -66,7 +66,7 @@ class TextSphere {
     const fontSize = Math.max(18, R * 0.12);                   // big text
     this.globe.style.setProperty('--fs', `${fontSize.toFixed(1)}px`);
 
-    const str = (this._words.join('   ') + '   ').toUpperCase();
+    const str = (this._words.join(' ') + ' ').toUpperCase();   // single spaces → even gaps, even at the loop seam
     // wider latitude coverage → lines reach toward the poles and bunch there,
     // so the bulge reads as an even, circular sphere (not just a horizontal lens).
     // generate 12 rows but drop the topmost (it bunches too hard at the pole).
