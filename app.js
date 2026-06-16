@@ -43,10 +43,9 @@ class TextSphere {
   constructor(container) {
     this.container = container;
     this._words = ['OBJECTBOXD'];
-    this.inside = /\b(inside|concave)\b/.test(location.search);   // ?inside to try concave
+    this.inside = !/\bconvex\b/.test(location.search);   // inside-the-sphere by default; ?convex for the ball
     this.globe = document.createElement('div');
     this.globe.id = 'sphereGlobe';
-    this.globe.classList.toggle('inside', this.inside);
     this.container.appendChild(this.globe);
     this._build();
     let t;
@@ -56,30 +55,34 @@ class TextSphere {
   _build() {
     const vmin = Math.min(window.innerWidth, window.innerHeight);
     this.R = vmin * 0.5;
-    // inside: camera within the sphere (concave wall). outside: close camera, strong fisheye.
-    this.container.style.perspective = `${(vmin * (this.inside ? 0.42 : 0.66)).toFixed(0)}px`;
+    // inside: camera near the centre (small perspective) → strong barrel fisheye of the far wall.
+    // convex: camera outside, looking at the ball.
+    this.container.style.perspective = `${(vmin * (this.inside ? 0.32 : 0.66)).toFixed(0)}px`;
     this._render();
   }
 
   _render() {
     const R = this.R;
-    const fontSize = Math.max(10, R * 0.04);                   // smaller → denser
+    const fontSize = Math.max(9, R * 0.033);                   // small → dense, close lines
     this.globe.style.setProperty('--fs', `${fontSize.toFixed(1)}px`);
 
     const str = (this._words.join(' · ') + ' · ').toUpperCase();
-    const latMax = 84, N = 27;        // more parallels, more of the sphere
+    const latMax = 86, N = 33;        // many closely-spaced parallels
+    // inside view: glyphs sit on the FAR wall facing the camera (translateZ -R);
+    // the near hemisphere is back-face culled, so we see the wrapping inner grid.
+    const zSign = this.inside ? -1 : 1;
     const frag = document.createDocumentFragment();
     let gi = 0;
 
     for (let i = 0; i < N; i++) {
       const phi = -latMax + 2 * latMax * i / (N - 1);          // latitude (deg)
       const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
-      const nChars = Math.max(5, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.6)), 120));
+      const nChars = Math.max(5, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.62)), 130));
 
       // each parallel is its own ring, spun independently and alternating direction
       const ring = document.createElement('div');
       ring.className = 'ring';
-      const dur = 150 + i * 6;                                 // slow, slight per-ring variation
+      const dur = 150 + i * 5;                                 // slow, slight per-ring variation
       ring.style.animation = `ringSpin ${dur}s linear infinite ${i % 2 ? 'reverse' : 'normal'}`;
 
       for (let k = 0; k < nChars; k++) {
@@ -89,10 +92,8 @@ class TextSphere {
         const s = document.createElement('span');
         s.className = 'glyph';
         s.textContent = ch;
-        // inside view sees the far wall, where text reads mirrored — pre-flip each glyph
-        const flip = this.inside ? ' scaleX(-1)' : '';
         s.style.transform =
-          `rotateY(${lam.toFixed(1)}deg) rotateX(${(-phi).toFixed(1)}deg) translateZ(${R.toFixed(1)}px)${flip} translate(-50%,-50%)`;
+          `rotateY(${lam.toFixed(1)}deg) rotateX(${(-phi).toFixed(1)}deg) translateZ(${(zSign * R).toFixed(1)}px) translate(-50%,-50%)`;
         ring.appendChild(s);
       }
       frag.appendChild(ring);

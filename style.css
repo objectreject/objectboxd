@@ -86,11 +86,6 @@ html, body {
   white-space: nowrap;
   pointer-events: none;
 }
-/* inside / concave view shows the far wall — let glyph backs render */
-#sphereGlobe.inside .glyph {
-  backface-visibility: visible;
-  -webkit-backface-visibility: visible;
-}
 
 /* ── Figure mask layer ───────────────────────────────────────── */
 
