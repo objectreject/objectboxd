@@ -306,11 +306,8 @@ async function spin(db) {
   sphere.setWords(wordsFrom(picked.name));
   const posterUrl = await fetchPoster(picked.url);
   if (posterUrl) {
-    el.figWindow.style.backgroundImage = `url("${posterUrl}")`;                 // bright clear window
-    el.figWindow.classList.add('revealed');                                     // crossfade in
-    el.posterBack.style.backgroundImage =                                       // full-screen, red-tinted
-      `linear-gradient(rgba(177,4,17,.5), rgba(177,4,17,.5)), url("${posterUrl}")`;
-    el.posterBack.classList.add('show');
+    el.figWindow.style.backgroundImage = `url("${posterUrl}")`;                 // fills the figure, crossfades in
+    el.figWindow.classList.add('revealed');
   }
 
   el.resultYear.textContent = picked.year || '';
