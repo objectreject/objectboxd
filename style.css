@@ -134,10 +134,10 @@ html, body {
   position: absolute;
   left: 50%; bottom: 0;
   transform: translateX(-50%);
-  width: min(53vw, 680px);
-  aspect-ratio: 1365 / 768;
-  -webkit-mask: url(fig.png) bottom center / contain no-repeat;
-  mask: url(fig.png) bottom center / contain no-repeat;
+  width: min(68vw, 880px);
+  aspect-ratio: 1292 / 733;          /* tight-cropped silhouette */
+  -webkit-mask: url(fig.png?v=2) bottom center / contain no-repeat;
+  mask: url(fig.png?v=2) bottom center / contain no-repeat;
   filter: drop-shadow(0 0 8px rgba(0,0,0,.5));
 }
 .fig-black { background: #000; }
