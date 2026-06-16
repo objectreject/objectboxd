@@ -154,15 +154,8 @@ html, body {
   position: fixed; inset: 0; cursor: pointer;
   /* full-screen invisible drop target */
 }
-/* fully hidden — the dropzone itself handles clicks/drops */
-.dropzone input[type="file"] {
-  position: absolute;
-  width: 1px; height: 1px;
-  margin: -1px; padding: 0; border: 0;
-  opacity: 0; overflow: hidden;
-  clip: rect(0 0 0 0); clip-path: inset(50%);
-  pointer-events: none;
-}
+/* fully hidden — the dropzone triggers it programmatically, and handles drops */
+.dropzone input[type="file"] { display: none; }
 .dropzone.drag-over::after {
   content: '';
   position: fixed; inset: 0;

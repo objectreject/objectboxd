@@ -63,11 +63,11 @@ class TextSphere {
 
   _render() {
     const R = this.R;
-    const fontSize = Math.max(16, R * 0.09);                   // big cells, few glyphs
+    const fontSize = Math.max(20, R * 0.135);                  // big text, fuller fill
     this.globe.style.setProperty('--fs', `${fontSize.toFixed(1)}px`);
 
     const str = (this._words.join('   ') + '   ').toUpperCase();
-    const latMax = 68, N = 7;         // few parallels → much lighter compute
+    const latMax = 50, N = 7;         // few parallels, packed closer together
     // inside view: glyphs sit on the FAR wall facing the camera (translateZ -R);
     // the near hemisphere is back-face culled, so we see the wrapping inner grid.
     // longitude runs the opposite way from the outside, so reverse it to keep text legible.
@@ -78,7 +78,7 @@ class TextSphere {
     for (let i = 0; i < N; i++) {
       const phi = -latMax + 2 * latMax * i / (N - 1);          // latitude (deg)
       const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
-      const nChars = Math.max(4, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.66)), 46));
+      const nChars = Math.max(4, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.66)), 34));
 
       // each parallel is its own ring, spun independently and alternating direction
       const ring = document.createElement('div');
