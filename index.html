@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>objectboxd</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- persistent overlays -->
+  <div class="grain" aria-hidden="true"></div>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="bg-poster" id="bgPoster" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <main id="app">
+
+    <!-- ① UPLOAD -->
+    <section class="screen" id="screenUpload">
+      <div class="upload-logo">objectboxd</div>
+      <div class="dropzone" id="dropzone" role="button" tabindex="0"
+           aria-label="Upload Letterboxd export">
+        <div class="dz-inner">
+          <div class="dz-arrow">↓</div>
+          <p class="dz-headline">drop your<br>letterboxd export</p>
+          <p class="dz-sub">Settings → Data → Export your data<br>accepts .zip or individual .csv files</p>
+          <span class="dz-or">— or —</span>
+          <button class="dz-browse" id="dzBrowse" type="button">browse files</button>
+        </div>
+        <input type="file" id="fileInput" accept=".zip,.csv" multiple />
+      </div>
+      <p class="upload-error hidden" id="uploadError" role="alert"></p>
+    </section>
+
+    <!-- ② CONTROLS -->
+    <section class="screen hidden" id="screenControls">
+      <header class="ctrl-header">
+        <span class="ctrl-logo">objectboxd</span>
+        <div class="ctrl-meta">
+          <span id="lastUpdated" class="ctrl-updated"></span>
+          <button class="ctrl-refresh" id="refreshBtn" type="button" title="Update data">↑ update</button>
+        </div>
+      </header>
+      <div class="ctrl-body">
+        <div class="select-wrap">
+          <select id="sourceSelect" aria-label="Choose a list"></select>
+          <span class="select-count" id="sourceCount"></span>
+        </div>
+        <button class="spin-btn" id="spinBtn" type="button">SPIN</button>
+      </div>
+    </section>
+
+    <!-- ③ RESULT (overlaid on top of poster bg) -->
+    <section class="screen hidden" id="screenResult">
+      <button class="result-back" id="backBtn" type="button">← back</button>
+      <div class="result-body">
+        <div class="result-year" id="resultYear"></div>
+        <h2 class="result-title" id="resultTitle"></h2>
+        <div class="result-actions">
+          <a class="result-lb" id="resultLink" href="#" target="_blank" rel="noopener">
+            View on Letterboxd ↗
+          </a>
+          <button class="result-again" id="spinAgain" type="button">spin again</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SPINNING OVERLAY (shown over any screen) -->
+  <div class="spin-overlay hidden" id="spinOverlay" aria-live="assertive">
+    <div class="spin-flash" id="spinFlash"></div>
+    <div class="spin-bar" id="spinBar"><div class="spin-bar-fill" id="spinBarFill"></div></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
+    integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="app.js"></script>
+</body>
+</html>
