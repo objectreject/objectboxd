@@ -63,11 +63,11 @@ class TextSphere {
 
   _render() {
     const R = this.R;
-    const fontSize = Math.max(11, R * 0.05);                   // bigger cells, fewer glyphs
+    const fontSize = Math.max(12, R * 0.062);                  // bigger cells, fewer glyphs
     this.globe.style.setProperty('--fs', `${fontSize.toFixed(1)}px`);
 
     const str = (this._words.join(' · ') + ' · ').toUpperCase();
-    const latMax = 74, N = 17;        // fewer parallels → lighter compute
+    const latMax = 72, N = 13;        // fewer parallels → lighter compute
     // inside view: glyphs sit on the FAR wall facing the camera (translateZ -R);
     // the near hemisphere is back-face culled, so we see the wrapping inner grid.
     // longitude runs the opposite way from the outside, so reverse it to keep text legible.
@@ -78,7 +78,7 @@ class TextSphere {
     for (let i = 0; i < N; i++) {
       const phi = -latMax + 2 * latMax * i / (N - 1);          // latitude (deg)
       const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
-      const nChars = Math.max(5, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.62)), 80));
+      const nChars = Math.max(5, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.64)), 60));
 
       // each parallel is its own ring, spun independently and alternating direction
       const ring = document.createElement('div');
@@ -302,7 +302,7 @@ async function spin(db) {
   sphere.setWords(wordsFrom(picked.name));
   const posterUrl = await fetchPoster(picked.url);
   el.posterFig.style.backgroundImage = posterUrl ? `url("${posterUrl}")` : '';
-  el.monkWrap.classList.add('picked');
+  el.monkWrap.classList.add('show', 'picked');
 
   el.resultYear.textContent = picked.year || '';
   el.resultTitle.textContent = picked.name;
@@ -345,14 +345,14 @@ function boot(db) {
   populateSelect(db);
   el.drawBtn.onclick = () => spin(db);
   el.spinAgain.onclick = () => {
-    el.monkWrap.classList.remove('picked');
+    el.monkWrap.classList.remove('picked', 'show');
     el.posterFig.style.backgroundImage = '';
     screens.result.classList.remove('reveal');
     showScreen('controls');
     setTimeout(() => spin(db), 120);
   };
   el.backBtn.onclick = () => {
-    el.monkWrap.classList.remove('picked');
+    el.monkWrap.classList.remove('picked', 'show');
     el.posterFig.style.backgroundImage = '';
     screens.result.classList.remove('reveal');
     sphere.setWords([IDLE]);
@@ -363,7 +363,6 @@ function boot(db) {
     sphere.setWords([IDLE]);
     showScreen('upload');
   };
-  el.monkWrap.classList.add('show');
   showScreen('controls');
 }
 
