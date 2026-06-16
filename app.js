@@ -34,9 +34,11 @@ const screens = {
 
 // ── Text Sphere ───────────────────────────────────────────────────────────────
 
-// Concentric rings of curved text — the view from inside a sphere/dome.
-// Rings are sin-spaced (bunch toward the rim) and scale with radius for depth;
-// each ring spins at its own rate to give the warping, swirling motion.
+// A 3D bowl of curved-text rings — the view INTO a sphere.
+// Each ring is a curved line of text (SVG textPath) pushed to its own depth
+// (translateZ), so the browser's perspective foreshortens the far rings and
+// they converge to a centre point. The whole bowl spins via one GPU CSS
+// animation (no per-frame JS), so it stays smooth.
 const SVGNS = 'http://www.w3.org/2000/svg';
 
 class TextSphere {
@@ -44,58 +46,67 @@ class TextSphere {
     this.container = container;
     this._words = ['OBJECTBOXD'];
     this.rings = [];
-    this.rot = 0;
-    this.raf = null;
-    this.speed = 0.11;          // base deg/frame
-    this._init();
+    this.spin = document.createElement('div');
+    this.spin.id = 'sphereSpin';
+    this.container.appendChild(this.spin);
+    this._build();
+    let t;
+    window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => this._build(), 200); });
   }
 
-  _init() {
-    const VB = 1000, C = 500, RMAX = 730, N = 17;
-    const svg = document.createElementNS(SVGNS, 'svg');
-    svg.id = 'sphereSvg';
-    svg.setAttribute('viewBox', `0 0 ${VB} ${VB}`);
-    svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
-    const defs = document.createElementNS(SVGNS, 'defs');
-    svg.appendChild(defs);
-
-    for (let k = 1; k <= N; k++) {
-      const theta = (k / (N + 1)) * (Math.PI / 2);   // 0..~90°
-      const r = RMAX * Math.sin(theta);
-      const depth = r / RMAX;                          // 0 centre (far) … 1 rim (near)
-      const fontSize = 7 + depth * 30;
-
+  _build() {
+    this.spin.innerHTML = '';
+    this.rings = [];
+    const vmin = Math.min(window.innerWidth, window.innerHeight);
+    const R = vmin * 0.72;
+    const N = 13;
+    for (let k = 0; k < N; k++) {
+      const a = (7 + 81 * k / (N - 1)) * Math.PI / 180;   // 7°…88° down the bowl
+      const r = R * Math.cos(a);                            // ring radius (rim big → centre small)
+      const z = -R * Math.sin(a) * 0.95;                    // depth (rim near → centre far)
+      if (r < 8) continue;
+      const fk = Math.max(10, r * 0.09);
+      const pad = fk * 1.4, D = 2 * r;
       const id = `ring${k}`;
+
+      const div = document.createElement('div');
+      div.className = 'ring';
+      div.style.transform = `translate(-50%,-50%) translateZ(${z.toFixed(1)}px)`;
+
+      const svg = document.createElementNS(SVGNS, 'svg');
+      svg.setAttribute('viewBox', `${-pad} ${-pad} ${D + 2 * pad} ${D + 2 * pad}`);
+      svg.style.width = `${(D + 2 * pad).toFixed(1)}px`;
+      svg.style.height = `${(D + 2 * pad).toFixed(1)}px`;
+      svg.style.overflow = 'visible';
+
+      const defs = document.createElementNS(SVGNS, 'defs');
       const path = document.createElementNS(SVGNS, 'path');
-      path.id = id;
-      path.setAttribute('fill', 'none');
-      path.setAttribute('d',
-        `M ${C - r} ${C} a ${r} ${r} 0 1 1 ${2 * r} 0 a ${r} ${r} 0 1 1 ${-2 * r} 0`);
+      path.id = id; path.setAttribute('fill', 'none');
+      path.setAttribute('d', `M 0 ${r} a ${r} ${r} 0 1 1 ${2 * r} 0 a ${r} ${r} 0 1 1 ${-2 * r} 0`);
       defs.appendChild(path);
 
-      const g = document.createElementNS(SVGNS, 'g');
       const text = document.createElementNS(SVGNS, 'text');
-      text.setAttribute('font-size', fontSize.toFixed(1));
-      text.setAttribute('opacity', (0.28 + depth * 0.62).toFixed(2));
+      text.setAttribute('font-size', fk.toFixed(1));
+      text.setAttribute('opacity', (0.32 + (r / R) * 0.58).toFixed(2));
       const tp = document.createElementNS(SVGNS, 'textPath');
       tp.setAttribute('href', `#${id}`);
       tp.setAttributeNS('http://www.w3.org/1999/xlink', 'href', `#${id}`);
       text.appendChild(tp);
-      g.appendChild(text);
-      svg.appendChild(g);
 
-      this.rings.push({ g, tp, fontSize, depth, circ: 2 * Math.PI * r, dir: k % 2 ? 1 : -1 });
+      svg.appendChild(defs); svg.appendChild(text);
+      div.appendChild(svg);
+      this.spin.appendChild(div);
+      this.rings.push({ tp, fk, circ: 2 * Math.PI * r });
     }
-    this.container.appendChild(svg);
     this._fill();
   }
 
   _fill() {
     const base = this._words.join('  ·  ') + '  ·  ';
     for (const ring of this.rings) {
-      const charW = ring.fontSize * 0.56;
+      const charW = ring.fk * 0.56;
       const need = Math.max(1, Math.ceil(ring.circ / charW / base.length));
-      ring.tp.textContent = base.repeat(Math.min(need, 36));
+      ring.tp.textContent = base.repeat(Math.min(need, 30));
     }
   }
 
@@ -104,27 +115,7 @@ class TextSphere {
     this._fill();
   }
 
-  _frame() {
-    this.rot += this.speed;
-    for (const ring of this.rings) {
-      const a = this.rot * ring.dir * (0.45 + ring.depth);
-      ring.g.setAttribute('transform', `rotate(${a.toFixed(2)} 500 500)`);
-    }
-    this.raf = requestAnimationFrame(() => this._frame());
-  }
-
-  start() { if (!this.raf) this._frame(); }
-
-  flashWords(wordArrays, doneCallback) {
-    let i = 0, interval = 45;
-    const tick = () => {
-      if (i >= wordArrays.length) { doneCallback(); return; }
-      this.setWords(wordArrays[i++]);
-      interval = Math.min(interval * 1.08, 280);
-      setTimeout(tick, interval);
-    };
-    tick();
-  }
+  start() { /* spin is a CSS animation */ }
 }
 
 const sphere = new TextSphere(el.sphereWrap);
@@ -310,17 +301,10 @@ async function spin(db) {
   if (!films.length) { spinning = false; el.drawBtn.disabled = false; return; }
 
   const picked = films[Math.floor(Math.random() * films.length)];
-  const posterP = fetchPoster(picked.url);
 
-  const allTitles = films.map(f => wordsFrom(f.name));
-  const picks = [...allTitles].sort(() => Math.random() - .5).slice(0, 28);
-  picks.push(wordsFrom(picked.name));
-
-  await new Promise(resolve => sphere.flashWords(picks, resolve));
+  // Pick is instant — show the title on the sphere, then reveal once the poster lands
   sphere.setWords(wordsFrom(picked.name));
-  await wait(300);
-
-  const posterUrl = await posterP;
+  const posterUrl = await fetchPoster(picked.url);
   el.posterFig.style.backgroundImage = posterUrl ? `url("${posterUrl}")` : '';
   el.monkWrap.classList.add('picked');
 
@@ -336,8 +320,6 @@ async function spin(db) {
   spinning = false;
   el.drawBtn.disabled = false;
 }
-
-const wait = ms => new Promise(r => setTimeout(r, ms));
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 
