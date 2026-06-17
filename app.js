@@ -70,9 +70,9 @@ class TextSphere {
     this.globe.replaceChildren();
     this.rows = [];
     const R = this.R, fontSize = this._fontSize;
-    // 14 rows; drop both extreme pole rows (they bunch worst), and make the
-    // next-in rows top & bottom a decorative symbol halo → 10 text rows between
-    const latMax = 80, N = 14;
+    // 13 rows; drop both extreme pole rows (they bunch worst), and make the
+    // next-in rows top & bottom a decorative symbol halo → 9 text rows between
+    const latMax = 80, N = 13;
     for (let i = 0; i < N; i++) {
       if (i === 0 || i === N - 1) continue;
       const halo = (i === 1 || i === N - 2);
@@ -142,8 +142,8 @@ class TextSphere {
 // IDLE is the key passed to setWords; IDLE_LINES is the hand-authored per-row split (no commas).
 const IDLE = 'In nature we never see anything isolated, but everything in connection with something else which is before it, beside it, under it, and over it.';
 const IDLE_LINES = [
-  'In nature', 'we never', 'see anything isolated', 'but in connection', 'with something else',
-  'which is', 'before it', 'beside it', 'under it', 'and over it',
+  'In nature', 'we never see', 'anything isolated', 'but in connection with', 'something else which is',
+  'before it', 'beside it', 'under it', 'and over it',
 ];
 
 const sphere = new TextSphere(el.sphereWrap);
