@@ -76,9 +76,9 @@ class TextSphere {
     for (let i = 0; i < N; i++) {
       if (i === 0 || i === N - 1) continue;
       const halo = (i === 1 || i === N - 2);
-      // lift the top halo (N-2) & line 1 (N-3) most; lines 2–8 a touch (+3°);
-      // line 9 and the bottom halo stay put
-      const lift = i >= N - 3 ? 6 : (i >= 3 ? 3 : 0);
+      // top halo gets extra lift so it doesn't squeeze against line 1 near the pole;
+      // line 1 a bit; lines 2–8 a touch; line 9 + bottom halo stay put
+      const lift = i === N - 2 ? 10 : i === N - 3 ? 6 : (i >= 3 ? 3 : 0);
       const phi = -latMax + 2 * latMax * i / (N - 1) + lift;
       const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
       const adv = (i === N - 3) ? 0.78 : 0.56;                  // line 1: wider letter spacing (less jumble)
