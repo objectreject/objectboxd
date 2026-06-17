@@ -13,6 +13,7 @@ const el = {
   sphereWrap:   $('sphereWrap'),
   posterBack:   $('posterBack'),
   figWindow:    $('figWindow'),
+  figWindow2:   $('figWindow2'),
   fileInput:    $('fileInput'),
   dropzone:     $('dropzone'),
   uploadError:  $('uploadError'),
@@ -368,10 +369,7 @@ async function spin(db) {
   const posterUrl = await fetchPoster(picked.url);
 
   sphere.setWords(wordsFrom(picked.name));                                      // sphere → title, synced with reveal
-  if (posterUrl) {
-    el.figWindow.style.backgroundImage = `url("${posterUrl}")`;                 // fills the figure, crossfades in
-    el.figWindow.classList.add('revealed');
-  }
+  showPoster(posterUrl);                                                        // crossfade poster into the figure
   document.body.classList.add('result-mode');                                   // flip to black bg / red text
 
   el.resultYear.textContent = picked.year || '';
@@ -411,9 +409,23 @@ window.addEventListener('resize', () => {
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 
+// Two stacked poster layers; alternate which one is shown so the new poster
+// crossfades over the previous (instead of swapping under a single layer).
+let _posterLayer = 0;
+function showPoster(url) {
+  const next = _posterLayer ? el.figWindow : el.figWindow2;
+  const prev = _posterLayer ? el.figWindow2 : el.figWindow;
+  next.style.backgroundImage = url ? `url("${url}")` : '';
+  void next.offsetWidth;                          // reflow so the opacity transition runs
+  next.classList.add('revealed');                 // fade new in
+  prev.classList.remove('revealed');              // fade old out → crossfade
+  _posterLayer ^= 1;
+}
+
 // back to the idle state: figure → black silhouette, drop the poster backdrop
 function resetPoster() {
-  el.figWindow.classList.remove('revealed');     // fade poster back out to the black silhouette
+  el.figWindow.classList.remove('revealed');
+  el.figWindow2.classList.remove('revealed');
   el.posterBack.classList.remove('show');
   document.body.classList.remove('result-mode'); // flip back to red bg / black text
 }
