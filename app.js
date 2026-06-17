@@ -160,7 +160,7 @@ const IDLE_LINES = [
   'before it', 'beside it', 'under it', 'and over it',
 ];
 // per-line spin duration (seconds), top→bottom — lower = faster
-const IDLE_DURS = [235, 144, 200, 62, 42, 235, 235, 235, 144];
+const IDLE_DURS = [235, 144, 200, 45, 42, 235, 235, 235, 144];
 
 const sphere = new TextSphere(el.sphereWrap);
 sphere.setWords([IDLE]);
