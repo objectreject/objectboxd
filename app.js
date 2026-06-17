@@ -58,7 +58,7 @@ class TextSphere {
     this._fontSize = Math.max(18, this.R * 0.12);              // big text
     // inside: camera near the centre (small perspective) → strong barrel fisheye of the far wall.
     // convex: camera outside, looking at the ball.
-    this.container.style.perspective = `${(vmin * (this.inside ? 0.28 : 0.66)).toFixed(0)}px`;
+    this.container.style.perspective = `${(vmin * (this.inside ? 0.34 : 0.66)).toFixed(0)}px`;
     this._buildRings();      // ring elements + spin animations (recreated only on layout change)
     this._fill();            // glyph content (re-run on every text change)
   }
@@ -76,8 +76,10 @@ class TextSphere {
     for (let i = 0; i < N; i++) {
       if (i === 0 || i === N - 1) continue;
       const halo = (i === 1 || i === N - 2);
-      // lift the top halo (N-2) and line 1 (N-3) up a touch
-      const phi = -latMax + 2 * latMax * i / (N - 1) + (i >= N - 3 ? 6 : 0);
+      // lift the top halo (N-2) & line 1 (N-3) up a touch; line 2 (N-4) half as much
+      // so it sits midway between lines 1 and 3
+      const lift = i >= N - 3 ? 6 : (i === N - 4 ? 3 : 0);
+      const phi = -latMax + 2 * latMax * i / (N - 1) + lift;
       const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
       const nChars = Math.max(4, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.56)), 40));
       const ring = document.createElement('div');
