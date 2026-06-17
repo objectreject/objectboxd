@@ -142,7 +142,7 @@ class TextSphere {
 // IDLE is the key passed to setWords; IDLE_LINES is the hand-authored per-row split (no commas).
 const IDLE = 'In nature we never see anything isolated, but everything in connection with something else which is before it, beside it, under it, and over it.';
 const IDLE_LINES = [
-  'In nature', 'we never see', 'anything isolated', 'but in connection with', 'something else which is',
+  'In nature', 'we never see', 'anything isolated', 'but everything in connection', 'with something else which is',
   'before it', 'beside it', 'under it', 'and over it',
 ];
 
