@@ -358,9 +358,11 @@ async function spin(db) {
 
   const picked = films[Math.floor(Math.random() * films.length)];
 
-  // Pick is instant — show the title on the sphere, then reveal once the poster lands
-  sphere.setWords(wordsFrom(picked.name));
+  // Fetch the poster first (sphere keeps showing the idle quote meanwhile),
+  // then change the sphere text and reveal everything together.
   const posterUrl = await fetchPoster(picked.url);
+
+  sphere.setWords(wordsFrom(picked.name));                                      // sphere → title, synced with reveal
   if (posterUrl) {
     el.figWindow.style.backgroundImage = `url("${posterUrl}")`;                 // fills the figure, crossfades in
     el.figWindow.classList.add('revealed');
