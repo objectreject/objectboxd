@@ -72,7 +72,7 @@ html, body {
   position: fixed; inset: 0;
   z-index: 2;                           /* above the poster backdrop, below the figure window */
   overflow: hidden;
-  perspective-origin: 50% 50%;          /* perspective px is set from JS */
+  perspective-origin: 50% 56%;          /* nudged down to use the bottom space */
 }
 /* fade the text into the background toward the rim — cheaper than masking the
    animated 3D content every frame (mask was the likely cause of slow lag) */
@@ -81,11 +81,11 @@ html, body {
   position: absolute; inset: 0;
   z-index: 2;
   pointer-events: none;
-  background: radial-gradient(circle at 50% 50%, transparent 46%, var(--bg) 92%);
+  background: radial-gradient(circle at 50% 56%, transparent 46%, var(--bg) 92%);
 }
 
 #sphereGlobe {
-  position: absolute; left: 50%; top: 50%;
+  position: absolute; left: 50%; top: 56%;
   transform-style: preserve-3d;
 }
 
@@ -140,7 +140,7 @@ html, body {
   mask: url(fig.png?v=2) bottom center / contain no-repeat;
   filter: drop-shadow(0 0 8px rgba(0,0,0,.5));
 }
-.fig-black { background: #000; opacity: 0.58; }   /* translucent on idle → quote reads through */
+.fig-black { background: #000; opacity: 0.85; }   /* darker silhouette on idle */
 .fig-poster {
   background-position: center; background-size: cover; background-repeat: no-repeat;
   opacity: 0;
