@@ -70,9 +70,9 @@ class TextSphere {
     this.globe.replaceChildren();
     this.rows = [];
     const R = this.R, fontSize = this._fontSize;
-    // 13 rows; drop both extreme pole rows (they bunch worst), and make the
-    // next-in rows top & bottom a decorative symbol halo
-    const latMax = 80, N = 13;
+    // 14 rows; drop both extreme pole rows (they bunch worst), and make the
+    // next-in rows top & bottom a decorative symbol halo → 10 text rows between
+    const latMax = 80, N = 14;
     for (let i = 0; i < N; i++) {
       if (i === 0 || i === N - 1) continue;
       const halo = (i === 1 || i === N - 2);
@@ -98,22 +98,13 @@ class TextSphere {
 
     // assign each row its repeating text unit
     const textRows = this.rows.filter(r => !r.halo);
-    if (words.length >= textRows.length) {
-      // long quote: split across rows (top→bottom), proportional to each ring's size,
-      // so every line is a clean repeating phrase and the rows together spell the quote
+    const isIdle = this._words.length === 1 && this._words[0] === IDLE;
+    if (isIdle && textRows.length === IDLE_LINES.length) {
+      // idle quote: one hand-authored phrase per row, top→bottom
       const order = [...textRows].sort((a, b) => b.phi - a.phi);   // top first
-      const totalCap = order.reduce((s, r) => s + r.nChars, 0);
-      let wi = 0;
-      order.forEach((r, idx) => {
-        const remaining = order.length - idx;
-        let take = Math.max(1, Math.round(words.length * r.nChars / totalCap));
-        take = Math.min(take, words.length - wi - (remaining - 1));  // leave ≥1 word per remaining row
-        if (idx === order.length - 1) take = words.length - wi;      // last row mops up the rest
-        r.unit = words.slice(wi, wi + take).join(' ') + ' · ';
-        wi += take;
-      });
+      order.forEach((r, idx) => { r.unit = IDLE_LINES[idx].toUpperCase() + ' · '; });
     } else {
-      const whole = words.join(' ') + ' · ';                   // short title: repeat on every row
+      const whole = words.join(' ') + ' · ';                   // film title: repeat on every row
       textRows.forEach(r => { r.unit = whole; });
     }
     this.rows.forEach(r => { if (r.halo) r.unit = SYMBOLS; });
@@ -147,8 +138,13 @@ class TextSphere {
   start() { /* spin is a CSS animation */ }
 }
 
-// Idle text shown on the sphere whenever no film is drawn
+// Idle text shown on the sphere whenever no film is drawn.
+// IDLE is the key passed to setWords; IDLE_LINES is the hand-authored per-row split (no commas).
 const IDLE = 'In nature we never see anything isolated, but everything in connection with something else which is before it, beside it, under it, and over it.';
+const IDLE_LINES = [
+  'In nature', 'we never', 'see anything isolated', 'but in connection', 'with something else',
+  'which is', 'before it', 'beside it', 'under it', 'and over it',
+];
 
 const sphere = new TextSphere(el.sphereWrap);
 sphere.setWords([IDLE]);
