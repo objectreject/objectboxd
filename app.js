@@ -78,21 +78,21 @@ class TextSphere {
       const halo = (i === 1 || i === N - 2);
       const phi = -latMax + 2 * latMax * i / (N - 1);
       const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
-      const nChars = Math.max(4, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.66)), 34));
+      const nChars = Math.max(4, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.56)), 40));
       const ring = document.createElement('div');
       ring.className = 'ring';
       this.globe.appendChild(ring);
       this.rows.push({ ring, halo, phi, nChars, idx: i });
     }
 
-    // Spin duration is inversely proportional to the line's word count: dur = WORD_BASE / words.
-    // More words → shorter rotation → faster scroll. Set ONCE here (from the idle quote's
-    // per-line word counts, mapped top→bottom) so it survives text changes without restarting.
-    const WORD_BASE = 480, HALO_DUR = 130;
+    // Spin duration falls off with word count: dur = WORD_BASE / words^WORD_POW.
+    // More words → faster (the exponent makes long lines speed up while short stay slow).
+    // Set ONCE here (idle quote word counts, top→bottom) so it survives text changes.
+    const WORD_BASE = 540, WORD_POW = 1.2, HALO_DUR = 130;
     const textTop2Bottom = this.rows.filter(r => !r.halo).sort((a, b) => b.phi - a.phi);
     textTop2Bottom.forEach((r, k) => {
       const w = (IDLE_LINES[k] || '').split(/\s+/).filter(Boolean).length || 2;
-      r.dur = WORD_BASE / w;
+      r.dur = WORD_BASE / Math.pow(w, WORD_POW);
     });
     this.rows.forEach(r => {
       if (r.halo) r.dur = HALO_DUR;
