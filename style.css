@@ -140,7 +140,7 @@ html, body {
   mask: url(fig.png?v=2) bottom center / contain no-repeat;
   filter: drop-shadow(0 0 8px rgba(0,0,0,.5));
 }
-.fig-black { background: #000; opacity: 0.42; }   /* translucent on idle → quote reads through */
+.fig-black { background: #000; opacity: 0.58; }   /* translucent on idle → quote reads through */
 .fig-poster {
   background-position: center; background-size: cover; background-repeat: no-repeat;
   opacity: 0;

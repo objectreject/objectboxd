@@ -70,11 +70,12 @@ class TextSphere {
     this.globe.replaceChildren();
     this.rows = [];
     const R = this.R, fontSize = this._fontSize;
-    // 13 rows, drop the topmost (over-bunches at pole); next-topmost is a symbol halo
+    // 13 rows; drop both extreme pole rows (they bunch worst), and make the
+    // next-in rows top & bottom a decorative symbol halo
     const latMax = 80, N = 13;
     for (let i = 0; i < N; i++) {
-      if (i === N - 1) continue;
-      const halo = (i === N - 2);
+      if (i === 0 || i === N - 1) continue;
+      const halo = (i === 1 || i === N - 2);
       const phi = -latMax + 2 * latMax * i / (N - 1);
       const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
       const nChars = Math.max(4, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.66)), 34));
