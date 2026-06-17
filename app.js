@@ -67,10 +67,11 @@ class TextSphere {
     this.globe.style.setProperty('--fs', `${fontSize.toFixed(1)}px`);
 
     const str = (this._words.join(' ') + ' ').toUpperCase();   // single spaces → even gaps, even at the loop seam
+    const SYMBOLS = '· • ';                                     // decorative halo for the top row
     // wider latitude coverage → lines reach toward the poles and bunch there,
     // so the bulge reads as an even, circular sphere (not just a horizontal lens).
-    // generate 12 rows but drop the topmost (it bunches too hard at the pole).
-    const latMax = 80, N = 12;
+    // generate 13 rows but drop the topmost (it bunches too hard at the pole).
+    const latMax = 80, N = 13;
     // inside view: glyphs sit on the FAR wall facing the camera (translateZ -R);
     // the near hemisphere is back-face culled, so we see the wrapping inner grid.
     // longitude runs the opposite way from the outside, so reverse it to keep text legible.
@@ -80,6 +81,7 @@ class TextSphere {
 
     for (let i = 0; i < N; i++) {
       if (i === N - 1) continue;                               // drop the over-bunched top row
+      const halo = (i === N - 2);                              // topmost rendered row → symbols only
       const phi = -latMax + 2 * latMax * i / (N - 1);          // latitude (deg)
       const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
       const nChars = Math.max(4, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.66)), 34));
@@ -91,7 +93,7 @@ class TextSphere {
       ring.style.animation = `ringSpin ${dur}s linear infinite ${i % 2 ? 'reverse' : 'normal'}`;
 
       for (let k = 0; k < nChars; k++) {
-        const ch = str[gi++ % str.length];
+        const ch = halo ? SYMBOLS[k % SYMBOLS.length] : str[gi++ % str.length];
         if (ch === ' ') continue;                              // spaces become gaps; keep letters + punctuation
         const lam = lamDir * 360 * k / nChars + 180;           // +180 hides the loop seam at the back
         const s = document.createElement('span');
