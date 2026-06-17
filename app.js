@@ -422,10 +422,10 @@ function boot(db) {
   populateSelect(db);
   el.drawBtn.onclick = () => spin(db);
   el.spinAgain.onclick = () => {
-    resetPoster();
+    // re-draw in place: hide the current title and let spin() reveal the next
+    // pick — no detour through the controls screen (which was flashing)
     screens.result.classList.remove('reveal');
-    showScreen('controls');
-    setTimeout(() => spin(db), 120);
+    spin(db);
   };
   el.backBtn.onclick = () => {
     resetPoster();
