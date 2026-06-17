@@ -81,11 +81,24 @@ class TextSphere {
       const nChars = Math.max(4, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.66)), 34));
       const ring = document.createElement('div');
       ring.className = 'ring';
-      const dur = 150 + i * 6;                                 // slow, slight per-ring variation
-      ring.style.animation = `ringSpin ${dur}s linear infinite ${i % 2 ? 'reverse' : 'normal'}`;
       this.globe.appendChild(ring);
-      this.rows.push({ ring, halo, phi, nChars });
+      this.rows.push({ ring, halo, phi, nChars, idx: i });
     }
+
+    // Spin duration scales with the line's word count: dur = SEC_PER_WORD × words.
+    // More words → longer rotation → slower scroll (more dwell time on longer lines).
+    // Set ONCE here (from the idle quote's per-line word counts, mapped top→bottom)
+    // so it survives text changes without restarting the animation.
+    const SEC_PER_WORD = 48, HALO_DUR = 130;
+    const textTop2Bottom = this.rows.filter(r => !r.halo).sort((a, b) => b.phi - a.phi);
+    textTop2Bottom.forEach((r, k) => {
+      const w = (IDLE_LINES[k] || '').split(/\s+/).filter(Boolean).length || 2;
+      r.dur = SEC_PER_WORD * w;
+    });
+    this.rows.forEach(r => {
+      if (r.halo) r.dur = HALO_DUR;
+      r.ring.style.animation = `ringSpin ${r.dur}s linear infinite ${r.idx % 2 ? 'reverse' : 'normal'}`;
+    });
   }
 
   // Swap the glyphs inside the existing rings (does NOT touch the spin animation)
