@@ -85,15 +85,11 @@ class TextSphere {
       this.rows.push({ ring, halo, phi, nChars, idx: i });
     }
 
-    // Spin duration falls off with word count: dur = WORD_BASE / words^WORD_POW.
-    // More words → faster (the exponent makes long lines speed up while short stay slow).
-    // Set ONCE here (idle quote word counts, top→bottom) so it survives text changes.
-    const WORD_BASE = 540, WORD_POW = 1.2, HALO_DUR = 130;
+    // Per-line spin duration (IDLE_DURS, top→bottom). Set ONCE here so it survives
+    // text changes without restarting the animation.
+    const HALO_DUR = 130;
     const textTop2Bottom = this.rows.filter(r => !r.halo).sort((a, b) => b.phi - a.phi);
-    textTop2Bottom.forEach((r, k) => {
-      const w = (IDLE_LINES[k] || '').split(/\s+/).filter(Boolean).length || 2;
-      r.dur = WORD_BASE / Math.pow(w, WORD_POW);
-    });
+    textTop2Bottom.forEach((r, k) => { r.dur = IDLE_DURS[k] || 150; });
     this.rows.forEach(r => {
       if (r.halo) r.dur = HALO_DUR;
       r.ring.style.animation = `ringSpin ${r.dur}s linear infinite ${r.idx % 2 ? 'reverse' : 'normal'}`;
@@ -130,7 +126,7 @@ class TextSphere {
       for (let k = 0; k < count; k++) {
         const ch = unit[k % unit.length];
         if (ch === ' ') continue;                              // spaces become gaps
-        const lam = lamDir * 360 * k / count + 180;
+        const lam = lamDir * 360 * k / count + 180 + r.idx * 50;   // per-row phase → rows don't align at startup
         const s = document.createElement('span');
         s.className = 'glyph';
         s.textContent = ch;
@@ -157,6 +153,8 @@ const IDLE_LINES = [
   'In nature', 'we never see', 'anything isolated', 'but everything in connection', 'with something else which is',
   'before it', 'beside it', 'under it', 'and over it',
 ];
+// per-line spin duration (seconds), top→bottom — lower = faster
+const IDLE_DURS = [235, 144, 200, 85, 60, 235, 235, 235, 144];
 
 const sphere = new TextSphere(el.sphereWrap);
 sphere.setWords([IDLE]);
