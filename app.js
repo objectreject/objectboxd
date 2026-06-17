@@ -55,41 +55,48 @@ class TextSphere {
   _build() {
     const vmin = Math.min(window.innerWidth, window.innerHeight);
     this.R = vmin * 0.62;                                       // larger → zoomed in
+    this._fontSize = Math.max(18, this.R * 0.12);              // big text
     // inside: camera near the centre (small perspective) → strong barrel fisheye of the far wall.
     // convex: camera outside, looking at the ball.
     this.container.style.perspective = `${(vmin * (this.inside ? 0.28 : 0.66)).toFixed(0)}px`;
-    this._render();
+    this._buildRings();      // ring elements + spin animations (recreated only on layout change)
+    this._fill();            // glyph content (re-run on every text change)
   }
 
-  _render() {
-    const R = this.R;
-    const fontSize = Math.max(18, R * 0.12);                   // big text
-    this.globe.style.setProperty('--fs', `${fontSize.toFixed(1)}px`);
-
-    const words = this._words.join(' ').toUpperCase().split(/\s+/).filter(Boolean);
-    const SYMBOLS = '· • ';                                     // decorative halo for the top row
-    // wider latitude coverage → lines reach toward the poles and bunch there,
-    // so the bulge reads as an even, circular sphere (not just a horizontal lens).
-    // generate 13 rows but drop the topmost (it bunches too hard at the pole).
+  // Create the ring elements once per layout. Their CSS spin animations keep
+  // running across text changes because _fill only swaps the glyphs inside them.
+  _buildRings() {
+    this.globe.style.setProperty('--fs', `${this._fontSize.toFixed(1)}px`);
+    this.globe.replaceChildren();
+    this.rows = [];
+    const R = this.R, fontSize = this._fontSize;
+    // 13 rows, drop the topmost (over-bunches at pole); next-topmost is a symbol halo
     const latMax = 80, N = 13;
-    // inside view: glyphs sit on the FAR wall facing the camera (translateZ -R);
-    // the near hemisphere is back-face culled, so we see the wrapping inner grid.
-    // longitude runs the opposite way from the outside, so reverse it to keep text legible.
-    const zSign = this.inside ? -1 : 1, lamDir = this.inside ? -1 : 1;
-
-    // ── pass 1: geometry of each visible row ──
-    const rows = [];
     for (let i = 0; i < N; i++) {
-      if (i === N - 1) continue;                               // drop the over-bunched top row
-      const halo = (i === N - 2);                              // topmost rendered row → symbols only
-      const phi = -latMax + 2 * latMax * i / (N - 1);          // latitude (deg)
+      if (i === N - 1) continue;
+      const halo = (i === N - 2);
+      const phi = -latMax + 2 * latMax * i / (N - 1);
       const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
       const nChars = Math.max(4, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.66)), 34));
-      rows.push({ i, halo, phi, nChars });
+      const ring = document.createElement('div');
+      ring.className = 'ring';
+      const dur = 150 + i * 6;                                 // slow, slight per-ring variation
+      ring.style.animation = `ringSpin ${dur}s linear infinite ${i % 2 ? 'reverse' : 'normal'}`;
+      this.globe.appendChild(ring);
+      this.rows.push({ ring, halo, phi, nChars });
     }
+  }
 
-    // ── assign each row its repeating text unit ──
-    const textRows = rows.filter(r => !r.halo);
+  // Swap the glyphs inside the existing rings (does NOT touch the spin animation)
+  _fill() {
+    if (!this.rows) return;
+    const R = this.R;
+    const words = this._words.join(' ').toUpperCase().split(/\s+/).filter(Boolean);
+    const SYMBOLS = '· • ';
+    const zSign = this.inside ? -1 : 1, lamDir = this.inside ? -1 : 1;
+
+    // assign each row its repeating text unit
+    const textRows = this.rows.filter(r => !r.halo);
     if (words.length >= textRows.length) {
       // long quote: split across rows (top→bottom), proportional to each ring's size,
       // so every line is a clean repeating phrase and the rows together spell the quote
@@ -108,19 +115,14 @@ class TextSphere {
       const whole = words.join(' ') + ' · ';                   // short title: repeat on every row
       textRows.forEach(r => { r.unit = whole; });
     }
-    rows.forEach(r => { if (r.halo) r.unit = SYMBOLS; });
+    this.rows.forEach(r => { if (r.halo) r.unit = SYMBOLS; });
 
-    // ── pass 2: build glyphs ──
-    const frag = document.createDocumentFragment();
-    rows.forEach(r => {
-      const ring = document.createElement('div');
-      ring.className = 'ring';
-      const dur = 150 + r.i * 6;                               // slow, slight per-ring variation
-      ring.style.animation = `ringSpin ${dur}s linear infinite ${r.i % 2 ? 'reverse' : 'normal'}`;
+    // build glyphs into each ring (replaceChildren keeps the ring + its animation)
+    this.rows.forEach(r => {
       const unit = r.unit;
-      // tile the phrase a WHOLE number of times around the ring → no wrap seam,
-      // so spinning never reveals a break (fixes the creeping jumble over time)
+      // tile the phrase a WHOLE number of times around the ring → no wrap seam
       const count = Math.max(1, Math.round(r.nChars / unit.length)) * unit.length;
+      const frag = document.createDocumentFragment();
       for (let k = 0; k < count; k++) {
         const ch = unit[k % unit.length];
         if (ch === ' ') continue;                              // spaces become gaps
@@ -130,16 +132,15 @@ class TextSphere {
         s.textContent = ch;
         s.style.transform =
           `rotateY(${lam.toFixed(1)}deg) rotateX(${(-r.phi).toFixed(1)}deg) translateZ(${(zSign * R).toFixed(1)}px) translate(-50%,-50%)`;
-        ring.appendChild(s);
+        frag.appendChild(s);
       }
-      frag.appendChild(ring);
+      r.ring.replaceChildren(frag);
     });
-    this.globe.replaceChildren(frag);
   }
 
   setWords(words) {
     this._words = words.length ? words : ['OBJECTBOXD'];
-    this._render();
+    this._fill();            // only swap glyphs — rings keep spinning
   }
 
   start() { /* spin is a CSS animation */ }
