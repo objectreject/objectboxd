@@ -118,10 +118,13 @@ class TextSphere {
       const dur = 150 + r.i * 6;                               // slow, slight per-ring variation
       ring.style.animation = `ringSpin ${dur}s linear infinite ${r.i % 2 ? 'reverse' : 'normal'}`;
       const unit = r.unit;
-      for (let k = 0; k < r.nChars; k++) {
+      // tile the phrase a WHOLE number of times around the ring → no wrap seam,
+      // so spinning never reveals a break (fixes the creeping jumble over time)
+      const count = Math.max(1, Math.round(r.nChars / unit.length)) * unit.length;
+      for (let k = 0; k < count; k++) {
         const ch = unit[k % unit.length];
         if (ch === ' ') continue;                              // spaces become gaps
-        const lam = lamDir * 360 * k / r.nChars + 180;
+        const lam = lamDir * 360 * k / count + 180;
         const s = document.createElement('span');
         s.className = 'glyph';
         s.textContent = ch;
