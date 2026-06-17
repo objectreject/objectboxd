@@ -437,6 +437,7 @@ function boot(db) {
     // re-draw in place: hide the current title and let spin() reveal the next
     // pick — no detour through the controls screen (which was flashing)
     screens.result.classList.remove('reveal');
+    document.body.classList.remove('result-mode');   // flash back to red; spin() fades it to black again
     spin(db);
   };
   el.backBtn.onclick = () => {
