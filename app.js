@@ -81,7 +81,8 @@ class TextSphere {
       const lift = i >= N - 3 ? 6 : (i >= 3 ? 3 : 0);
       const phi = -latMax + 2 * latMax * i / (N - 1) + lift;
       const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
-      const nChars = Math.max(4, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.56)), 40));
+      const adv = (i === N - 3) ? 0.78 : 0.56;                  // line 1: wider letter spacing (less jumble)
+      const nChars = Math.max(4, Math.min(Math.round(Math.abs(circ) / (fontSize * adv)), 40));
       const ring = document.createElement('div');
       ring.className = 'ring';
       this.globe.appendChild(ring);
