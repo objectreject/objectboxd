@@ -76,7 +76,8 @@ class TextSphere {
     for (let i = 0; i < N; i++) {
       if (i === 0 || i === N - 1) continue;
       const halo = (i === 1 || i === N - 2);
-      const phi = -latMax + 2 * latMax * i / (N - 1);
+      // lift the top halo (N-2) and line 1 (N-3) up a touch
+      const phi = -latMax + 2 * latMax * i / (N - 1) + (i >= N - 3 ? 6 : 0);
       const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
       const nChars = Math.max(4, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.56)), 40));
       const ring = document.createElement('div');
