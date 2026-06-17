@@ -66,7 +66,7 @@ class TextSphere {
     const fontSize = Math.max(18, R * 0.12);                   // big text
     this.globe.style.setProperty('--fs', `${fontSize.toFixed(1)}px`);
 
-    const str = (this._words.join(' ') + ' ').toUpperCase();   // single spaces → even gaps, even at the loop seam
+    const words = this._words.join(' ').toUpperCase().split(/\s+/).filter(Boolean);
     const SYMBOLS = '· • ';                                     // decorative halo for the top row
     // wider latitude coverage → lines reach toward the poles and bunch there,
     // so the bulge reads as an even, circular sphere (not just a horizontal lens).
@@ -76,35 +76,61 @@ class TextSphere {
     // the near hemisphere is back-face culled, so we see the wrapping inner grid.
     // longitude runs the opposite way from the outside, so reverse it to keep text legible.
     const zSign = this.inside ? -1 : 1, lamDir = this.inside ? -1 : 1;
-    const frag = document.createDocumentFragment();
-    let gi = 0;
 
+    // ── pass 1: geometry of each visible row ──
+    const rows = [];
     for (let i = 0; i < N; i++) {
       if (i === N - 1) continue;                               // drop the over-bunched top row
       const halo = (i === N - 2);                              // topmost rendered row → symbols only
       const phi = -latMax + 2 * latMax * i / (N - 1);          // latitude (deg)
       const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
       const nChars = Math.max(4, Math.min(Math.round(Math.abs(circ) / (fontSize * 0.66)), 34));
+      rows.push({ i, halo, phi, nChars });
+    }
 
-      // each parallel is its own ring, spun independently and alternating direction
+    // ── assign each row its repeating text unit ──
+    const textRows = rows.filter(r => !r.halo);
+    if (words.length >= textRows.length) {
+      // long quote: split across rows (top→bottom), proportional to each ring's size,
+      // so every line is a clean repeating phrase and the rows together spell the quote
+      const order = [...textRows].sort((a, b) => b.phi - a.phi);   // top first
+      const totalCap = order.reduce((s, r) => s + r.nChars, 0);
+      let wi = 0;
+      order.forEach((r, idx) => {
+        const remaining = order.length - idx;
+        let take = Math.max(1, Math.round(words.length * r.nChars / totalCap));
+        take = Math.min(take, words.length - wi - (remaining - 1));  // leave ≥1 word per remaining row
+        if (idx === order.length - 1) take = words.length - wi;      // last row mops up the rest
+        r.unit = words.slice(wi, wi + take).join(' ') + ' · ';
+        wi += take;
+      });
+    } else {
+      const whole = words.join(' ') + ' · ';                   // short title: repeat on every row
+      textRows.forEach(r => { r.unit = whole; });
+    }
+    rows.forEach(r => { if (r.halo) r.unit = SYMBOLS; });
+
+    // ── pass 2: build glyphs ──
+    const frag = document.createDocumentFragment();
+    rows.forEach(r => {
       const ring = document.createElement('div');
       ring.className = 'ring';
-      const dur = 150 + i * 6;                                 // slow, slight per-ring variation
-      ring.style.animation = `ringSpin ${dur}s linear infinite ${i % 2 ? 'reverse' : 'normal'}`;
-
-      for (let k = 0; k < nChars; k++) {
-        const ch = halo ? SYMBOLS[k % SYMBOLS.length] : str[gi++ % str.length];
-        if (ch === ' ') continue;                              // spaces become gaps; keep letters + punctuation
-        const lam = lamDir * 360 * k / nChars + 180;           // +180 hides the loop seam at the back
+      const dur = 150 + r.i * 6;                               // slow, slight per-ring variation
+      ring.style.animation = `ringSpin ${dur}s linear infinite ${r.i % 2 ? 'reverse' : 'normal'}`;
+      const unit = r.unit;
+      for (let k = 0; k < r.nChars; k++) {
+        const ch = unit[k % unit.length];
+        if (ch === ' ') continue;                              // spaces become gaps
+        const lam = lamDir * 360 * k / r.nChars + 180;
         const s = document.createElement('span');
         s.className = 'glyph';
         s.textContent = ch;
         s.style.transform =
-          `rotateY(${lam.toFixed(1)}deg) rotateX(${(-phi).toFixed(1)}deg) translateZ(${(zSign * R).toFixed(1)}px) translate(-50%,-50%)`;
+          `rotateY(${lam.toFixed(1)}deg) rotateX(${(-r.phi).toFixed(1)}deg) translateZ(${(zSign * R).toFixed(1)}px) translate(-50%,-50%)`;
         ring.appendChild(s);
       }
       frag.appendChild(ring);
-    }
+    });
     this.globe.replaceChildren(frag);
   }
 
