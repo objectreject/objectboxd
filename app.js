@@ -81,7 +81,8 @@ class TextSphere {
       const lift = i === N - 2 ? 10 : i === N - 3 ? 6 : (i >= 3 ? 3 : 0);
       const phi = -latMax + 2 * latMax * i / (N - 1) + lift;
       const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
-      const adv = (i === N - 3) ? 0.78 : 0.56;                  // line 1: wider letter spacing (less jumble)
+      // wider character spacing for the halos and line 1 (less squeezed/jumbled)
+      const adv = halo ? 0.95 : (i === N - 3 ? 0.85 : 0.56);
       const nChars = Math.max(4, Math.min(Math.round(Math.abs(circ) / (fontSize * adv)), 40));
       const ring = document.createElement('div');
       ring.className = 'ring';
