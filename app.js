@@ -85,15 +85,14 @@ class TextSphere {
       this.rows.push({ ring, halo, phi, nChars, idx: i });
     }
 
-    // Spin duration scales with the line's word count: dur = SEC_PER_WORD × words.
-    // More words → longer rotation → slower scroll (more dwell time on longer lines).
-    // Set ONCE here (from the idle quote's per-line word counts, mapped top→bottom)
-    // so it survives text changes without restarting the animation.
-    const SEC_PER_WORD = 48, HALO_DUR = 130;
+    // Spin duration is inversely proportional to the line's word count: dur = WORD_BASE / words.
+    // More words → shorter rotation → faster scroll. Set ONCE here (from the idle quote's
+    // per-line word counts, mapped top→bottom) so it survives text changes without restarting.
+    const WORD_BASE = 480, HALO_DUR = 130;
     const textTop2Bottom = this.rows.filter(r => !r.halo).sort((a, b) => b.phi - a.phi);
     textTop2Bottom.forEach((r, k) => {
       const w = (IDLE_LINES[k] || '').split(/\s+/).filter(Boolean).length || 2;
-      r.dur = SEC_PER_WORD * w;
+      r.dur = WORD_BASE / w;
     });
     this.rows.forEach(r => {
       if (r.halo) r.dur = HALO_DUR;
