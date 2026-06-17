@@ -76,9 +76,9 @@ class TextSphere {
     for (let i = 0; i < N; i++) {
       if (i === 0 || i === N - 1) continue;
       const halo = (i === 1 || i === N - 2);
-      // top halo gets extra lift so it doesn't squeeze against line 1 near the pole;
-      // line 1 a bit; lines 2–8 a touch; line 9 + bottom halo stay put
-      const lift = i === N - 2 ? 10 : i === N - 3 ? 6 : (i >= 3 ? 3 : 0);
+      // lower latitude = wider/flatter arc. Ease the top lifts so the top rows'
+      // "U" opens out (they were too high/tight near the pole).
+      const lift = i === N - 2 ? 6 : i === N - 3 ? 4 : (i >= 3 ? 3 : 0);
       const phi = -latMax + 2 * latMax * i / (N - 1) + lift;
       const circ = 2 * Math.PI * R * Math.cos(phi * Math.PI / 180);
       // wider character spacing for the halos and line 1 (less squeezed/jumbled)
