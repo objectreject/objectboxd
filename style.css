@@ -208,6 +208,14 @@ body.result-mode .veil { opacity: 1; }
   pointer-events: none;
 }
 .upload-hint span { opacity: .75; }
+.upload-hint .hint-link {
+  color: inherit; text-decoration: none;
+  pointer-events: auto;                 /* clickable even though the hint isn't */
+  border-bottom: 1px solid var(--ui-dim);
+  padding-bottom: 1px;
+  transition: color .2s, border-color .2s;
+}
+.upload-hint .hint-link:hover { color: var(--ui-bright); border-bottom-color: var(--ui); }
 
 .upload-logo {
   position: fixed; top: 32px; left: 40px;
