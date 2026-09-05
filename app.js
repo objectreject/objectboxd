@@ -4,6 +4,7 @@ const LB = 'https://letterboxd.com';
 const PROXIES = [
   u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
   u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  u => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(u)}`,
 ];
 
 // ── DOM ───────────────────────────────────────────────────────────────────────
@@ -352,26 +353,18 @@ function populateSelect(db) {
 
 // ── Spin ──────────────────────────────────────────────────────────────────────
 
-let spinning = false;
+let spinToken = 0;
 
-async function spin(db) {
-  if (spinning) return;
-  spinning = true;
-  el.drawBtn.disabled = true;
-
+function spin(db) {
   const films = getFilms(db);
-  if (!films.length) { spinning = false; el.drawBtn.disabled = false; return; }
+  if (!films.length) return;
 
   const picked = films[Math.floor(Math.random() * films.length)];
+  const myToken = ++spinToken;                                                  // guards against out-of-order poster loads
 
-  // Fetch the poster first (sphere keeps showing the idle quote meanwhile),
-  // then change the sphere text and reveal everything together.
-  const posterUrl = await fetchPoster(picked.url);
-
-  sphere.setWords(wordsFrom(picked.name));                                      // sphere → title, synced with reveal
-  showPoster(posterUrl);                                                        // crossfade poster into the figure
+  // Reveal instantly — the pick is already known; don't wait on the poster.
+  sphere.setWords(wordsFrom(picked.name));                                      // sphere → title
   document.body.classList.add('result-mode');                                   // flip to black bg / red text
-
   el.resultYear.textContent = picked.year || '';
   el.resultTitle.textContent = picked.name;
   el.resultLink.href = picked.url;
@@ -382,8 +375,10 @@ async function spin(db) {
   fitResultTitle();
   screens.result.classList.add('reveal');
 
-  spinning = false;
-  el.drawBtn.disabled = false;
+  // Poster loads in the background and crossfades into the figure when it lands.
+  fetchPoster(picked.url).then(url => {
+    if (myToken === spinToken && url) showPoster(url);                          // ignore if a newer draw happened
+  });
 }
 
 // Shrink the result title until it fits on one line (long names spill otherwise)
