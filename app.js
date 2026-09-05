@@ -1,11 +1,7 @@
 'use strict';
 
-const LB = 'https://letterboxd.com';
-const PROXIES = [
-  u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
-  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-  u => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(u)}`,
-];
+// TMDB (themoviedb.org) — reliable poster lookup by title+year, CORS-open, no proxy.
+const TMDB_KEY = '7deee703cab6424bd6120a60471aef1d';
 
 // ── DOM ───────────────────────────────────────────────────────────────────────
 
@@ -303,20 +299,34 @@ async function processFiles(files) {
   return db;
 }
 
-// ── Poster fetch ──────────────────────────────────────────────────────────────
+// ── Poster fetch (TMDB) ─────────────────────────────────────────────────────────
 
-// filmUrl is a boxd.it or letterboxd.com URL; proxies follow redirects.
-async function fetchPoster(filmUrl) {
-  if (!filmUrl) return null;
-  for (const proxy of PROXIES) {
-    try {
-      const res = await fetch(proxy(filmUrl), { signal: AbortSignal.timeout(10000) });
-      if (!res.ok) continue;
-      const m = (await res.text()).match(/<meta property="og:image" content="([^"]+)"/);
-      if (m && m[1].includes('ltrbxd')) return m[1];
-    } catch { /* next proxy */ }
-  }
-  return null;
+const posterCache = new Map();
+
+// Look up a poster by film name + year via TMDB.
+async function fetchPoster(name, year) {
+  if (!name || !TMDB_KEY || TMDB_KEY.startsWith('PASTE')) return null;
+  const cacheKey = `${name}|${year || ''}`;
+  if (posterCache.has(cacheKey)) return posterCache.get(cacheKey);
+  const yr = parseInt(year, 10);
+
+  const search = async (withYear) => {
+    let url = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(name)}`;
+    if (withYear && year) url += `&year=${year}`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return null;
+    const withPoster = ((await res.json()).results || []).filter(r => r.poster_path);
+    if (!withPoster.length) return null;
+    // prefer a result within ±1 year of the target, else the top result
+    const near = yr ? withPoster.find(r => Math.abs(parseInt(r.release_date, 10) - yr) <= 1) : null;
+    return `https://image.tmdb.org/t/p/w780${(near || withPoster[0]).poster_path}`;
+  };
+
+  try {
+    const poster = (await search(true)) || (await search(false));   // year-filtered, then broaden
+    if (poster) posterCache.set(cacheKey, poster);                   // cache hits only, allow retry on miss
+    return poster;
+  } catch { return null; }
 }
 
 // ── Routing ───────────────────────────────────────────────────────────────────
@@ -376,7 +386,7 @@ function spin(db) {
   screens.result.classList.add('reveal');
 
   // Poster loads in the background and crossfades into the figure when it lands.
-  fetchPoster(picked.url).then(url => {
+  fetchPoster(picked.name, picked.year).then(url => {
     if (myToken === spinToken && url) showPoster(url);                          // ignore if a newer draw happened
   });
 }
