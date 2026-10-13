@@ -15,6 +15,7 @@ LISTS = [
     {"key":"solidarity",   "name":"Solidarity Cinema",  "tier":"dlfast", "url":"https://letterboxd.com/solidaritycine/list/solidarity-cinema-archive/"},
     {"key":"rarefilmm",    "name":"rarefilmm.com",      "tier":"dlslow", "url":"https://letterboxd.com/rhettman417/list/movies-on-rarefilmmcom/"},
     {"key":"worldscinema", "name":"worldscinema.org",   "tier":"dlslow", "url":"https://letterboxd.com/kordian86/list/films-featured-on-worldscinemaorg/"},
+    {"key":"internetarchive", "name":"Internet Archive", "tier":"stream", "url":"https://letterboxd.com/_pigsty/list/internet-archive/"},
 ]
 
 NAME_RE = re.compile(r'^(.*)\s+\((\d{4})\)\s*$')
