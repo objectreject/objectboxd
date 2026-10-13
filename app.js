@@ -504,8 +504,8 @@ function makeRow({ film, sources, rental }) {
 function renderWatch() {
   if (!_watch) return;
   const mode = el.watchSort.value || 'alpha';
-  const rentalOnly = el.watchRental.getAttribute('aria-pressed') === 'true';
-  const keep = r => !rentalOnly || r.rental;
+  const hideRentals = el.watchRental.getAttribute('aria-pressed') === 'true';
+  const keep = r => !hideRentals || !r.rental;   // on → drop films you already have as rentals
   const available = sortRows(_watch.available.filter(keep), mode);
   const unavailable = sortRows(_watch.unavailable.filter(keep), mode);
 
