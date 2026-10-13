@@ -26,7 +26,7 @@ const el = {
   watchOpenBtn: $('watchOpenBtn'),
   watchBackBtn: $('watchBackBtn'),
   watchBody:    $('watchBody'),
-  watchSummary: $('watchSummary'),
+  watchSort:    $('watchSort'),
 };
 const screens = {
   upload:   $('screenUpload'),
@@ -442,92 +442,105 @@ function xrefKey(name, year) {
 }
 
 const TIER_RANK = { stream: 0, dlfast: 1, dlslow: 2 };
-const SECTIONS = [
-  { tier: 'stream', label: '▶ streaming',             cls: '' },
-  { tier: 'dlfast', label: '⬇ download — fast',        cls: '' },
-  { tier: 'dlslow', label: '🐢 download — slow · start these ahead', cls: 'slow' },
-];
+
+// Two-letter code shown on each source badge (full list name in the tooltip).
+const LIST_CODE = {
+  ubuweb: 'UB', oedipus: 'OR', zenxiu: 'ZX', japanokru: 'OK',
+  solidarity: 'SC', rarefilmm: 'RA', worldscinema: 'WC',
+};
+
+let _watch = null;   // { available:[{film,sources,idx}], unavailable:[{film,idx}] }
+
+function sortRows(arr, mode) {
+  const cmp = {
+    alpha: (a, b) => (a.film.name || '').localeCompare(b.film.name || ''),
+    year:  (a, b) => ((parseInt(b.film.year, 10) || 0) - (parseInt(a.film.year, 10) || 0))
+                     || (a.film.name || '').localeCompare(b.film.name || ''),
+    added: (a, b) => a.idx - b.idx,
+  }[mode];
+  if (cmp) arr.sort(cmp);
+  return arr;
+}
+
+function makeRow({ film, sources }) {
+  const row = document.createElement('div');
+  row.className = 'watch-row';
+
+  const title = document.createElement('span');
+  title.className = 'wf-title';
+  title.textContent = film.name;
+  const year = document.createElement('span');
+  year.className = 'wf-year';
+  year.textContent = film.year || '';
+  row.append(title, year);
+
+  if (sources && sources.length) {
+    const srcWrap = document.createElement('span');
+    srcWrap.className = 'wf-sources';
+    for (const s of sources) {
+      const a = document.createElement('a');
+      a.className = 'wf-badge ' + s.tier;
+      a.href = s.url;                                  // → the Letterboxd list
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = LIST_CODE[s.key] || s.name.slice(0, 2).toUpperCase();
+      a.title = s.name;
+      srcWrap.appendChild(a);
+    }
+    row.appendChild(srcWrap);
+  }
+  return row;
+}
+
+function renderWatch() {
+  if (!_watch) return;
+  const mode = el.watchSort.value || 'alpha';
+  const available = sortRows(_watch.available.slice(), mode);
+  const unavailable = sortRows(_watch.unavailable.slice(), mode);
+
+  const frag = document.createDocumentFragment();
+  available.forEach(r => frag.appendChild(makeRow(r)));   // no category header
+
+  if (unavailable.length) {
+    const head = document.createElement('div');
+    head.className = 'watch-section-head unavail';
+    head.innerHTML = `<span>unavailable</span><span class="wc">${unavailable.length}</span>`;
+    frag.appendChild(head);
+    unavailable.forEach(r => {
+      const row = makeRow(r);
+      row.classList.add('wf-unavail');
+      frag.appendChild(row);
+    });
+  }
+  el.watchBody.replaceChildren(frag);
+}
 
 function openWatch(db) {
   showScreen('watch');
+  el.watchBody.innerHTML = '';
   const watchlist = db.lists.find(l => l.name === 'Watchlist');
   if (!watchlist || !watchlist.films.length) {
-    el.watchSummary.textContent = 'no watchlist found in your export';
+    _watch = null;
     el.watchBody.innerHTML = '<p class="watch-empty">Your export didn’t include a watchlist.<br>Re-upload the full .zip from Letterboxd.</p>';
     return;
   }
-  el.watchSummary.textContent = 'cross-referencing your watchlist…';
-  el.watchBody.innerHTML = '';
 
   loadXref().then(data => {
-    const total = watchlist.films.length;
-    const buckets = { stream: [], dlfast: [], dlslow: [] };
-
-    for (const f of watchlist.films) {
+    const available = [], unavailable = [];
+    watchlist.films.forEach((f, idx) => {
       const idxs = data.films[xrefKey(f.name, f.year)];
-      if (!idxs) continue;
-      const sources = idxs.map(i => data.lists[i])
-        .sort((a, b) => TIER_RANK[a.tier] - TIER_RANK[b.tier]);
-      const category = sources[0].tier;              // best availability wins
-      buckets[category].push({ film: f, sources });
-    }
-
-    const matched = buckets.stream.length + buckets.dlfast.length + buckets.dlslow.length;
-    if (!matched) {
-      el.watchSummary.textContent = `0 of ${total} on your watchlist are on these lists`;
-      el.watchBody.innerHTML = '<p class="watch-empty">None of your watchlist is on the followed lists yet.</p>';
-      return;
-    }
-
-    const streamN = buckets.stream.length;
-    const dlN = buckets.dlfast.length + buckets.dlslow.length;
-    el.watchSummary.textContent =
-      `${matched} of ${total} available · ${streamN} streaming · ${dlN} download`;
-
-    const frag = document.createDocumentFragment();
-    for (const sec of SECTIONS) {
-      const rows = buckets[sec.tier];
-      if (!rows.length) continue;
-      rows.sort((a, b) => (a.film.name || '').localeCompare(b.film.name || ''));
-
-      const section = document.createElement('div');
-      section.className = 'watch-section' + (sec.cls ? ' ' + sec.cls : '');
-      const head = document.createElement('div');
-      head.className = 'watch-section-head';
-      head.innerHTML = `<span>${sec.label}</span><span class="wc">${rows.length}</span>`;
-      section.appendChild(head);
-
-      for (const { film, sources } of rows) {
-        const row = document.createElement('div');
-        row.className = 'watch-row';
-
-        const title = document.createElement('span');
-        title.className = 'wf-title';
-        title.textContent = film.name;
-        const year = document.createElement('span');
-        year.className = 'wf-year';
-        year.textContent = film.year || '';
-
-        const srcWrap = document.createElement('span');
-        srcWrap.className = 'wf-sources';
-        for (const s of sources) {
-          const a = document.createElement('a');
-          a.className = 'wf-badge ' + s.tier;
-          a.href = s.url;
-          a.target = '_blank';
-          a.rel = 'noopener';
-          a.textContent = s.name;
-          srcWrap.appendChild(a);
-        }
-
-        row.append(title, year, srcWrap);
-        section.appendChild(row);
+      if (idxs) {
+        const sources = idxs.map(i => data.lists[i])
+          .sort((a, b) => TIER_RANK[a.tier] - TIER_RANK[b.tier]);
+        available.push({ film: f, sources, idx });
+      } else {
+        unavailable.push({ film: f, sources: null, idx });
       }
-      frag.appendChild(section);
-    }
-    el.watchBody.replaceChildren(frag);
+    });
+    _watch = { available, unavailable };
+    renderWatch();
   }).catch(() => {
-    el.watchSummary.textContent = 'couldn’t load the list data';
+    _watch = null;
     el.watchBody.innerHTML = '<p class="watch-empty">The list snapshot failed to load.<br>Try again in a moment.</p>';
   });
 }
@@ -578,6 +591,7 @@ function boot(db) {
   };
   el.watchOpenBtn.onclick = () => openWatch(db);
   el.watchBackBtn.onclick = () => showScreen('controls');
+  el.watchSort.onchange = () => renderWatch();
   showScreen('controls');
 }
 
