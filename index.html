@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>objectboxd</title>
-  <link rel="stylesheet" href="style.css?v=74" />
+  <link rel="stylesheet" href="style.css?v=75" />
 </head>
 <body>
 
@@ -47,7 +47,10 @@
     <section class="screen hidden" id="screenControls">
       <header class="ctrl-top">
         <span class="ctrl-logo">objectboxd</span>
-        <button class="btn-ghost" id="refreshBtn">↑ upload new</button>
+        <div class="ctrl-top-actions">
+          <button class="btn-ghost" id="refreshBtn">↑ upload new</button>
+          <button class="btn-ghost watch-open" id="watchOpenBtn">⧉ torrents</button>
+        </div>
       </header>
       <div class="ctrl-mid">
         <div class="select-row">
@@ -56,8 +59,7 @@
         </div>
       </div>
       <div class="ctrl-actions">
-        <button class="draw-btn" id="drawBtn">draw</button>
-        <button class="btn-ghost watch-open" id="watchOpenBtn">◎ what can i watch</button>
+        <button class="draw-btn" id="drawBtn">◎ draw</button>
       </div>
     </section>
 
@@ -101,6 +103,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
     integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="app.js?v=74"></script>
+  <script src="app.js?v=75"></script>
 </body>
 </html>

@@ -240,7 +240,10 @@ body.result-mode .veil { opacity: 1; }
 }
 
 .ctrl-top {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: flex-start; justify-content: space-between;
+}
+.ctrl-top-actions {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
 }
 .ctrl-logo {
   font-size: 1rem; font-weight: 700;
