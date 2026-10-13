@@ -16,6 +16,7 @@ LISTS = [
     {"key":"rarefilmm",    "name":"rarefilmm.com",      "tier":"dlslow", "url":"https://letterboxd.com/rhettman417/list/movies-on-rarefilmmcom/"},
     {"key":"worldscinema", "name":"worldscinema.org",   "tier":"dlslow", "url":"https://letterboxd.com/kordian86/list/films-featured-on-worldscinemaorg/"},
     {"key":"internetarchive", "name":"Internet Archive", "tier":"stream", "url":"https://letterboxd.com/_pigsty/list/internet-archive/"},
+    {"key":"pompoarismo", "name":"Acervo Pompoarismo", "tier":"stream", "url":"https://letterboxd.com/pompoarism0/list/acervo-pompoarismo/"},
 ]
 
 NAME_RE = re.compile(r'^(.*)\s+\((\d{4})\)\s*$')

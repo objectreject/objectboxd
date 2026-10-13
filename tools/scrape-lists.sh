@@ -16,6 +16,7 @@ lists=(
 "rarefilmm|rhettman417|movies-on-rarefilmmcom|39|dlslow"
 "worldscinema|kordian86|films-featured-on-worldscinemaorg|278|dlslow"
 "internetarchive|_pigsty|internet-archive|252|stream"
+"pompoarismo|pompoarism0|acervo-pompoarismo|16|stream"
 )
 
 for entry in "${lists[@]}"; do
