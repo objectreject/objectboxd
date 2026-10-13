@@ -489,10 +489,15 @@ function makeRow({ film, sources, rental }) {
   title.className = 'wf-title';
   title.textContent = film.name;
   if (film.url) { title.href = film.url; title.target = '_blank'; title.rel = 'noopener'; }  // → Letterboxd film page
+  row.appendChild(title);
+
+  // right-side cluster: year, then source badges (keeps titles clean)
+  const right = document.createElement('span');
+  right.className = 'wf-right';
   const year = document.createElement('span');
   year.className = 'wf-year';
   year.textContent = film.year || '';
-  row.append(title, year);
+  right.appendChild(year);
 
   if (sources && sources.length) {
     const srcWrap = document.createElement('span');
@@ -507,8 +512,9 @@ function makeRow({ film, sources, rental }) {
       a.title = s.name;
       srcWrap.appendChild(a);
     }
-    row.appendChild(srcWrap);
+    right.appendChild(srcWrap);
   }
+  row.appendChild(right);
   return row;
 }
 
@@ -541,6 +547,8 @@ function renderWatch() {
       (!dlOnly || isDownloadOnly(r))        // keep only films with no streaming option
     ), mode, _dir);
   }
+
+  el.watchBody.classList.toggle('unavail-view', onUnavail);
 
   const frag = document.createDocumentFragment();
   if (!rows.length) {

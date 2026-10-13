@@ -404,11 +404,16 @@ select option {
 }
 
 .watch-head {
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  display: flex; align-items: center; gap: 16px;
   padding: 26px 40px 18px;
   border-bottom: 1px solid rgba(214, 32, 26, 0.22);
   flex: 0 0 auto;
 }
+/* controls pushed right; back + tabs never shrink so showing/hiding the filter
+   toggles (on tab switch) can't squeeze or shift them */
+.watch-head > .btn-ghost { flex-shrink: 0; }
+.watch-tabs { flex-shrink: 0; }
+.watch-controls { margin-left: auto; flex-shrink: 1; min-width: 0; }
 .watch-head .btn-ghost { color: rgba(224, 120, 110, 0.7); }
 .watch-head .btn-ghost:hover { color: #ff4030; }
 
@@ -506,7 +511,10 @@ select option {
 /* unavailable = on your watchlist but not on any followed list */
 .watch-section-head.unavail { color: rgba(224, 120, 110, 0.55); border-bottom-color: rgba(255, 255, 255, 0.08); }
 .watch-section-head.unavail .wc { color: rgba(224, 120, 110, 0.4); }
-.watch-row.wf-unavail .wf-title { color: rgba(240, 214, 210, 0.5); font-weight: 600; }
+/* unavailable view: muted titles (still linked), reads as a quieter, secondary list */
+#watchBody.unavail-view .wf-title { color: rgba(224, 180, 174, 0.5); font-weight: 600; }
+#watchBody.unavail-view a.wf-title:hover { color: #ff6a5e; }
+#watchBody.unavail-view .watch-row { border-bottom-color: rgba(255, 255, 255, 0.03); }
 
 .watch-row {
   display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 14px;
@@ -524,7 +532,8 @@ a.wf-title:hover { color: #ff6a5e; text-decoration: underline; text-underline-of
   font-size: .72rem; color: rgba(224, 120, 110, 0.6);
   letter-spacing: .08em;
 }
-.wf-sources { display: flex; gap: 7px; flex-wrap: wrap; margin-left: auto; }
+.wf-right { margin-left: auto; display: flex; align-items: baseline; gap: 12px; flex-shrink: 0; }
+.wf-sources { display: flex; gap: 7px; flex-wrap: wrap; }
 .wf-badge {
   font-size: .62rem; font-weight: 700;
   letter-spacing: .08em; text-transform: uppercase;
@@ -567,5 +576,5 @@ a.wf-title:hover { color: #ff6a5e; text-decoration: underline; text-underline-of
   .ctrl-top { top: 24px; }
   .watch-head { padding: 24px 20px 16px; }
   .watch-body { padding: 10px 20px 60px; }
-  .wf-sources { margin-left: 0; flex-basis: 100%; }
+  .wf-right { margin-left: 0; flex-basis: 100%; justify-content: flex-start; }
 }
