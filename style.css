@@ -368,13 +368,20 @@ select option {
 }
 
 /* ── "what can i watch" entry on controls ────────────────────── */
-.watch-open {
+/* .btn-ghost.watch-open: higher specificity so the UI color beats the base
+   .btn-ghost rule (which is defined later in the file) — otherwise it renders
+   near-black on the red controls screen and is effectively invisible. */
+.btn-ghost.watch-open {
   align-self: center;
   letter-spacing: .16em;
-  color: var(--ui-dim);
+  color: var(--ui);
+  border: 1px solid var(--ui-dim);
+  padding: 8px 22px;
+  border-radius: 1px;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.22);
+  transition: color .2s, border-color .2s;
 }
-.watch-open:hover { color: var(--ui-bright); }
+.btn-ghost.watch-open:hover { color: var(--ui-bright); border-color: var(--ui); }
 
 /* ── ④ What can i watch ───────────────────────────────────────── */
 
