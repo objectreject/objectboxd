@@ -470,7 +470,7 @@ function makeRow({ film, sources, rental }) {
   if (rental) {
     const mark = document.createElement('span');
     mark.className = 'wf-rental';
-    mark.textContent = '❖';
+    mark.textContent = '†';
     mark.title = 'on your Rental list';
     row.appendChild(mark);
   }
