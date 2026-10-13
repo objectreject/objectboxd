@@ -30,7 +30,6 @@ const el = {
   watchRental:  $('watchRental'),
   watchDownloads: $('watchDownloads'),
   watchSortDir: $('watchSortDir'),
-  watchTabs:    $('watchTabs'),
 };
 const screens = {
   upload:   $('screenUpload'),
@@ -457,9 +456,8 @@ const LIST_CODE = {
 const isDownloadOnly = r => !!r.sources && r.sources.length > 0 && r.sources.every(s => s.tier !== 'stream');
 
 let _watch = null;   // { available:[{film,sources,idx,rental}], unavailable:[...], hasRental }
-let _tab = 'available';
 let _dir = 1;        // 1 = ascending, -1 = descending
-const TAB_LABEL = { available: 'online', unavailable: 'unavailable' };
+let _unavailOpen = false;   // collapsible "unavailable" section
 
 function sortRows(arr, mode, dir) {
   // base comparators are "ascending"; dir (-1) reverses for descending
@@ -489,15 +487,10 @@ function makeRow({ film, sources, rental }) {
   title.className = 'wf-title';
   title.textContent = film.name;
   if (film.url) { title.href = film.url; title.target = '_blank'; title.rel = 'noopener'; }  // → Letterboxd film page
-  row.appendChild(title);
-
-  // right-side cluster: year, then source badges (keeps titles clean)
-  const right = document.createElement('span');
-  right.className = 'wf-right';
   const year = document.createElement('span');
   year.className = 'wf-year';
   year.textContent = film.year || '';
-  right.appendChild(year);
+  row.append(title, year);                            // year inline, next to the title
 
   if (sources && sources.length) {
     const srcWrap = document.createElement('span');
@@ -512,52 +505,54 @@ function makeRow({ film, sources, rental }) {
       a.title = s.name;
       srcWrap.appendChild(a);
     }
-    right.appendChild(srcWrap);
+    row.appendChild(srcWrap);
   }
-  row.appendChild(right);
   return row;
 }
 
 function renderWatch() {
   if (!_watch) return;
   const mode = el.watchSort.value || 'alpha';
-  const onUnavail = _tab === 'unavailable';
   el.watchSortDir.textContent = _dir === 1 ? '↑' : '↓';
+  el.watchRental.classList.toggle('hidden', !_watch.hasRental);
 
-  // tab labels with counts; active state
-  [...el.watchTabs.children].forEach(t => {
-    const which = t.dataset.tab;
-    const n = which === 'available' ? _watch.available.length : _watch.unavailable.length;
-    t.textContent = `${TAB_LABEL[which]} ${n}`;
-    t.setAttribute('aria-selected', String(which === _tab));
-  });
-
-  // filters belong to the available tab only — unavailable stays reachable regardless
-  el.watchDownloads.classList.toggle('hidden', onUnavail);
-  el.watchRental.classList.toggle('hidden', onUnavail || !_watch.hasRental);
-
-  let rows;
-  if (onUnavail) {
-    rows = sortRows(_watch.unavailable.slice(), mode, _dir);
-  } else {
-    const hideRentals = el.watchRental.getAttribute('aria-pressed') === 'true';
-    const dlOnly = el.watchDownloads.getAttribute('aria-pressed') === 'true';
-    rows = sortRows(_watch.available.filter(r =>
-      (!hideRentals || !r.rental) &&        // drop films already on the Rental list
-      (!dlOnly || isDownloadOnly(r))        // keep only films with no streaming option
-    ), mode, _dir);
-  }
-
-  el.watchBody.classList.toggle('unavail-view', onUnavail);
+  // online list = available films, filtered + sorted
+  const hideRentals = el.watchRental.getAttribute('aria-pressed') === 'true';
+  const dlOnly = el.watchDownloads.getAttribute('aria-pressed') === 'true';
+  const online = sortRows(_watch.available.filter(r =>
+    (!hideRentals || !r.rental) &&          // drop films already on the Rental list
+    (!dlOnly || isDownloadOnly(r))          // keep only films with no streaming option
+  ), mode, _dir);
+  const unavail = sortRows(_watch.unavailable.slice(), mode, _dir);
 
   const frag = document.createDocumentFragment();
-  if (!rows.length) {
+  if (!online.length) {
     const p = document.createElement('p');
     p.className = 'watch-empty';
-    p.textContent = onUnavail ? 'Nothing here.' : 'No films match these filters.';
+    p.textContent = 'No films match these filters.';
     frag.appendChild(p);
   } else {
-    rows.forEach(r => frag.appendChild(makeRow(r)));
+    online.forEach(r => frag.appendChild(makeRow(r)));
+  }
+
+  // collapsible "unavailable" divider bar (centered label on a long thin line)
+  if (unavail.length) {
+    const bar = document.createElement('button');
+    bar.className = 'unavail-bar';
+    bar.setAttribute('aria-expanded', String(_unavailOpen));
+    bar.innerHTML =
+      '<span class="ub-line"></span>' +
+      '<span class="ub-label">unavailable <span class="ub-arrow">⌄</span></span>' +
+      '<span class="ub-line"></span>';
+    bar.onclick = () => { _unavailOpen = !_unavailOpen; renderWatch(); };
+    frag.appendChild(bar);
+
+    if (_unavailOpen) {
+      const wrap = document.createElement('div');
+      wrap.className = 'unavail-list';
+      unavail.forEach(r => wrap.appendChild(makeRow(r)));
+      frag.appendChild(wrap);
+    }
   }
   el.watchBody.replaceChildren(frag);
 }
@@ -576,7 +571,7 @@ function openWatch(db) {
   const rentalList = db.lists.find(l => l.name !== 'Watchlist' && /rental/i.test(l.name));
   const rentalSet = new Set((rentalList?.films || []).map(f => xrefKey(f.name, f.year)));
   if (!rentalList) el.watchRental.setAttribute('aria-pressed', 'false');
-  _tab = 'available';                                   // always open on the available tab
+  _unavailOpen = false;                                 // unavailable starts collapsed
 
   loadXref().then(data => {
     const available = [], unavailable = [];
@@ -653,12 +648,6 @@ function boot(db) {
   };
   el.watchRental.onclick = () => toggleBtn(el.watchRental);
   el.watchDownloads.onclick = () => toggleBtn(el.watchDownloads);
-  el.watchTabs.addEventListener('click', e => {
-    const tab = e.target.closest('.watch-tab');
-    if (!tab) return;
-    _tab = tab.dataset.tab;
-    renderWatch();
-  });
   showScreen('controls');
 }
 

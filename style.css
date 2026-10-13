@@ -417,27 +417,6 @@ select option {
 .watch-head .btn-ghost { color: rgba(224, 120, 110, 0.7); }
 .watch-head .btn-ghost:hover { color: #ff4030; }
 
-/* available / unavailable tabs */
-.watch-tabs { display: flex; gap: 6px; }
-.watch-tab {
-  font-family: var(--font);
-  font-size: .66rem; letter-spacing: .14em; text-transform: uppercase;
-  color: rgba(224, 120, 110, 0.6);
-  background: transparent; border: none;
-  border-bottom: 2px solid transparent;
-  padding: 4px 10px 7px; cursor: pointer;
-  transition: color .18s, border-color .18s;
-}
-.watch-tab:hover { color: #ff6a5e; }
-/* no font-weight change on active → tab width stays fixed (no layout jump) */
-.watch-tab[aria-selected="true"] { color: #ff4030; border-bottom-color: #d6201a; }
-/* unavailable is secondary — keep it muted even when selected */
-.watch-tab[data-tab="unavailable"] { color: rgba(224, 120, 110, 0.38); font-size: .6rem; }
-.watch-tab[data-tab="unavailable"]:hover { color: rgba(224, 120, 110, 0.7); }
-.watch-tab[data-tab="unavailable"][aria-selected="true"] {
-  color: rgba(224, 120, 110, 0.82); border-bottom-color: rgba(224, 120, 110, 0.45);
-}
-
 .watch-controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: flex-end; }
 
 /* filter toggles — pills with distinct accents (teal rental, amber downloads) */
@@ -511,10 +490,27 @@ select option {
 /* unavailable = on your watchlist but not on any followed list */
 .watch-section-head.unavail { color: rgba(224, 120, 110, 0.55); border-bottom-color: rgba(255, 255, 255, 0.08); }
 .watch-section-head.unavail .wc { color: rgba(224, 120, 110, 0.4); }
-/* unavailable view: muted titles (still linked), reads as a quieter, secondary list */
-#watchBody.unavail-view .wf-title { color: rgba(224, 180, 174, 0.5); font-weight: 600; }
-#watchBody.unavail-view a.wf-title:hover { color: #ff6a5e; }
-#watchBody.unavail-view .watch-row { border-bottom-color: rgba(255, 255, 255, 0.03); }
+/* collapsible "unavailable" divider: centered label on a long thin line */
+.unavail-bar {
+  display: flex; align-items: center; gap: 14px;
+  width: 100%; margin: 32px 0 2px;
+  background: none; border: none; cursor: pointer; padding: 6px 0;
+}
+.ub-line { flex: 1; height: 1px; background: rgba(224, 120, 110, 0.22); transition: background .18s; }
+.ub-label {
+  font-size: .62rem; letter-spacing: .22em; text-transform: uppercase;
+  color: rgba(224, 120, 110, 0.6); white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 7px; transition: color .18s;
+}
+.unavail-bar:hover .ub-label { color: #ff6a5e; }
+.unavail-bar:hover .ub-line { background: rgba(255, 106, 94, 0.3); }
+.ub-arrow { display: inline-block; font-size: .8rem; transition: transform .2s; }
+.unavail-bar[aria-expanded="true"] .ub-arrow { transform: rotate(180deg); }
+
+/* the revealed unavailable rows read quieter than the online list */
+.unavail-list .wf-title { color: rgba(224, 180, 174, 0.5); font-weight: 600; }
+.unavail-list a.wf-title:hover { color: #ff6a5e; }
+.unavail-list .watch-row { border-bottom-color: rgba(255, 255, 255, 0.03); }
 
 .watch-row {
   display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 14px;
@@ -532,8 +528,7 @@ a.wf-title:hover { color: #ff6a5e; text-decoration: underline; text-underline-of
   font-size: .72rem; color: rgba(224, 120, 110, 0.6);
   letter-spacing: .08em;
 }
-.wf-right { margin-left: auto; display: flex; align-items: baseline; gap: 12px; flex-shrink: 0; }
-.wf-sources { display: flex; gap: 7px; flex-wrap: wrap; }
+.wf-sources { display: flex; gap: 7px; flex-wrap: wrap; margin-left: auto; }
 .wf-badge {
   font-size: .62rem; font-weight: 700;
   letter-spacing: .08em; text-transform: uppercase;
@@ -576,5 +571,5 @@ a.wf-title:hover { color: #ff6a5e; text-decoration: underline; text-underline-of
   .ctrl-top { top: 24px; }
   .watch-head { padding: 24px 20px 16px; }
   .watch-body { padding: 10px 20px 60px; }
-  .wf-right { margin-left: 0; flex-basis: 100%; justify-content: flex-start; }
+  .wf-sources { margin-left: 0; flex-basis: 100%; }
 }
