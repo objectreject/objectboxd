@@ -424,7 +424,14 @@ select option {
   transition: color .18s, border-color .18s;
 }
 .watch-tab:hover { color: #ff6a5e; }
-.watch-tab[aria-selected="true"] { color: #ff4030; border-bottom-color: #d6201a; font-weight: 700; }
+/* no font-weight change on active → tab width stays fixed (no layout jump) */
+.watch-tab[aria-selected="true"] { color: #ff4030; border-bottom-color: #d6201a; }
+/* unavailable is secondary — keep it muted even when selected */
+.watch-tab[data-tab="unavailable"] { color: rgba(224, 120, 110, 0.38); font-size: .6rem; }
+.watch-tab[data-tab="unavailable"]:hover { color: rgba(224, 120, 110, 0.7); }
+.watch-tab[data-tab="unavailable"][aria-selected="true"] {
+  color: rgba(224, 120, 110, 0.82); border-bottom-color: rgba(224, 120, 110, 0.45);
+}
 
 .watch-controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: flex-end; }
 
@@ -451,6 +458,17 @@ select option {
   color: #6fd3c7; margin-right: 1px; font-size: .92rem; line-height: 1;
   flex: 0 0 auto;
 }
+
+.sort-group { display: inline-flex; align-items: center; gap: 6px; }
+.sort-dir {
+  font-family: var(--font); font-size: .8rem; line-height: 1;
+  color: #e9c4bf; background: transparent;
+  border: 1px solid rgba(224, 120, 110, 0.4); border-radius: 4px;
+  width: 24px; height: 22px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: color .18s, border-color .18s;
+}
+.sort-dir:hover { color: #ff6a5e; border-color: #ff6a5e; }
 
 .watch-sort {
   background: transparent; border: none;

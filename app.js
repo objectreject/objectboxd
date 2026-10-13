@@ -29,6 +29,7 @@ const el = {
   watchSort:    $('watchSort'),
   watchRental:  $('watchRental'),
   watchDownloads: $('watchDownloads'),
+  watchSortDir: $('watchSortDir'),
   watchTabs:    $('watchTabs'),
 };
 const screens = {
@@ -457,15 +458,18 @@ const isDownloadOnly = r => !!r.sources && r.sources.length > 0 && r.sources.eve
 
 let _watch = null;   // { available:[{film,sources,idx,rental}], unavailable:[...], hasRental }
 let _tab = 'available';
+let _dir = 1;        // 1 = ascending, -1 = descending
+const TAB_LABEL = { available: 'online', unavailable: 'unavailable' };
 
-function sortRows(arr, mode) {
+function sortRows(arr, mode, dir) {
+  // base comparators are "ascending"; dir (-1) reverses for descending
   const cmp = {
     alpha: (a, b) => (a.film.name || '').localeCompare(b.film.name || ''),
-    year:  (a, b) => ((parseInt(b.film.year, 10) || 0) - (parseInt(a.film.year, 10) || 0))
+    year:  (a, b) => ((parseInt(a.film.year, 10) || 0) - (parseInt(b.film.year, 10) || 0))
                      || (a.film.name || '').localeCompare(b.film.name || ''),
     added: (a, b) => a.idx - b.idx,
   }[mode];
-  if (cmp) arr.sort(cmp);
+  if (cmp) arr.sort((a, b) => dir * cmp(a, b));
   return arr;
 }
 
@@ -512,12 +516,13 @@ function renderWatch() {
   if (!_watch) return;
   const mode = el.watchSort.value || 'alpha';
   const onUnavail = _tab === 'unavailable';
+  el.watchSortDir.textContent = _dir === 1 ? '↑' : '↓';
 
   // tab labels with counts; active state
   [...el.watchTabs.children].forEach(t => {
     const which = t.dataset.tab;
     const n = which === 'available' ? _watch.available.length : _watch.unavailable.length;
-    t.textContent = `${which} ${n}`;
+    t.textContent = `${TAB_LABEL[which]} ${n}`;
     t.setAttribute('aria-selected', String(which === _tab));
   });
 
@@ -527,14 +532,14 @@ function renderWatch() {
 
   let rows;
   if (onUnavail) {
-    rows = sortRows(_watch.unavailable.slice(), mode);
+    rows = sortRows(_watch.unavailable.slice(), mode, _dir);
   } else {
     const hideRentals = el.watchRental.getAttribute('aria-pressed') === 'true';
     const dlOnly = el.watchDownloads.getAttribute('aria-pressed') === 'true';
     rows = sortRows(_watch.available.filter(r =>
       (!hideRentals || !r.rental) &&        // drop films already on the Rental list
       (!dlOnly || isDownloadOnly(r))        // keep only films with no streaming option
-    ), mode);
+    ), mode, _dir);
   }
 
   const frag = document.createDocumentFragment();
@@ -633,6 +638,7 @@ function boot(db) {
   el.watchOpenBtn.onclick = () => openWatch(db);
   el.watchBackBtn.onclick = () => showScreen('controls');
   el.watchSort.onchange = () => renderWatch();
+  el.watchSortDir.onclick = () => { _dir = -_dir; renderWatch(); };
   const toggleBtn = btn => {
     btn.setAttribute('aria-pressed', String(btn.getAttribute('aria-pressed') !== 'true'));
     renderWatch();
