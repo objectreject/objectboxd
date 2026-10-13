@@ -28,6 +28,7 @@ const el = {
   watchBody:    $('watchBody'),
   watchSort:    $('watchSort'),
   watchRental:  $('watchRental'),
+  watchDownloads: $('watchDownloads'),
 };
 const screens = {
   upload:   $('screenUpload'),
@@ -447,8 +448,11 @@ const TIER_RANK = { stream: 0, dlfast: 1, dlslow: 2 };
 // Two-letter code shown on each source badge (full list name in the tooltip).
 const LIST_CODE = {
   ubuweb: 'UB', oedipus: 'OR', zenxiu: 'ZX', japanokru: 'OK',
-  solidarity: 'SC', rarefilmm: 'RA', worldscinema: 'WC',
+  solidarity: 'SC', rarefilmm: 'RF', worldscinema: 'WC',
 };
+
+// A row is "download only" when it's available but none of its sources stream.
+const isDownloadOnly = r => !!r.sources && r.sources.length > 0 && r.sources.every(s => s.tier !== 'stream');
 
 let _watch = null;   // { available:[{film,sources,idx}], unavailable:[{film,idx}] }
 
@@ -475,9 +479,10 @@ function makeRow({ film, sources, rental }) {
     row.appendChild(mark);
   }
 
-  const title = document.createElement('span');
+  const title = document.createElement('a');
   title.className = 'wf-title';
   title.textContent = film.name;
+  if (film.url) { title.href = film.url; title.target = '_blank'; title.rel = 'noopener'; }  // → Letterboxd film page
   const year = document.createElement('span');
   year.className = 'wf-year';
   year.textContent = film.year || '';
@@ -505,7 +510,10 @@ function renderWatch() {
   if (!_watch) return;
   const mode = el.watchSort.value || 'alpha';
   const hideRentals = el.watchRental.getAttribute('aria-pressed') === 'true';
-  const keep = r => !hideRentals || !r.rental;   // on → drop films you already have as rentals
+  const dlOnly = el.watchDownloads.getAttribute('aria-pressed') === 'true';
+  const keep = r =>
+    (!hideRentals || !r.rental) &&          // on → drop films you already have as rentals
+    (!dlOnly || isDownloadOnly(r));         // on → keep only films with no streaming option
   const available = sortRows(_watch.available.filter(keep), mode);
   const unavailable = sortRows(_watch.unavailable.filter(keep), mode);
 
@@ -611,11 +619,12 @@ function boot(db) {
   el.watchOpenBtn.onclick = () => openWatch(db);
   el.watchBackBtn.onclick = () => showScreen('controls');
   el.watchSort.onchange = () => renderWatch();
-  el.watchRental.onclick = () => {
-    const on = el.watchRental.getAttribute('aria-pressed') === 'true';
-    el.watchRental.setAttribute('aria-pressed', String(!on));
+  const toggleBtn = btn => {
+    btn.setAttribute('aria-pressed', String(btn.getAttribute('aria-pressed') !== 'true'));
     renderWatch();
   };
+  el.watchRental.onclick = () => toggleBtn(el.watchRental);
+  el.watchDownloads.onclick = () => toggleBtn(el.watchDownloads);
   showScreen('controls');
 }
 

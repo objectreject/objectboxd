@@ -414,8 +414,8 @@ select option {
 
 .watch-controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: flex-end; }
 
-/* rental-only toggle — teal accent so it reads apart from the red tiers */
-.rental-toggle {
+/* filter toggles — pills with distinct accents (teal rental, amber downloads) */
+.rental-toggle, .dl-toggle {
   font-family: var(--font);
   font-size: .62rem; letter-spacing: .12em; text-transform: uppercase;
   color: rgba(224, 120, 110, 0.72);
@@ -427,6 +427,10 @@ select option {
 .rental-toggle:hover { color: #86e0d4; border-color: rgba(134, 224, 212, 0.6); }
 .rental-toggle[aria-pressed="true"] {
   color: #0a0404; background: #6fd3c7; border-color: #6fd3c7; font-weight: 700;
+}
+.dl-toggle:hover { color: #ffbd6e; border-color: rgba(255, 189, 110, 0.6); }
+.dl-toggle[aria-pressed="true"] {
+  color: #0a0404; background: #e0a44a; border-color: #e0a44a; font-weight: 700;
 }
 
 .wf-rental {
@@ -480,7 +484,10 @@ select option {
 .watch-row .wf-title {
   font-size: 1rem; font-weight: 700; color: #f0d6d2;
   letter-spacing: .01em;
+  text-decoration: none;
+  transition: color .15s;
 }
+a.wf-title:hover { color: #ff6a5e; text-decoration: underline; text-underline-offset: 3px; }
 .watch-row .wf-year {
   font-size: .72rem; color: rgba(224, 120, 110, 0.6);
   letter-spacing: .08em;
