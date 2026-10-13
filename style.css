@@ -592,7 +592,8 @@ a.wf-title:hover { color: #ff6a5e; text-decoration: underline; text-underline-of
   #screenControls { padding: 24px 20px 36px; }
   #screenResult { padding: 0 20px 40px; }
   .ctrl-top { top: 24px; }
-  .result-avail { right: 20px; bottom: 16px; }
+  /* stack the list/rental badges vertically in the bottom-right on phones */
+  .result-avail { right: 20px; bottom: 16px; flex-direction: column; align-items: flex-end; gap: 6px; }
   .watch-head { padding: 24px 20px 16px; }
   .watch-body { padding: 10px 20px 60px; }
   .wf-sources { margin-left: 0; flex-basis: 100%; }
