@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>objectboxd</title>
-  <link rel="stylesheet" href="style.css?v=65" />
+  <link rel="stylesheet" href="style.css?v=66" />
 </head>
 <body>
 
@@ -65,11 +65,14 @@
     <section class="screen hidden" id="screenWatch">
       <header class="watch-head">
         <button class="btn-ghost" id="watchBackBtn">← back</button>
-        <select id="watchSort" class="watch-sort" aria-label="Sort films">
-          <option value="alpha">alphabetical</option>
-          <option value="year">year released</option>
-          <option value="added">date added</option>
-        </select>
+        <div class="watch-controls">
+          <button class="rental-toggle hidden" id="watchRental" aria-pressed="false">🎟 rental only</button>
+          <select id="watchSort" class="watch-sort" aria-label="Sort films">
+            <option value="alpha">alphabetical</option>
+            <option value="year">year released</option>
+            <option value="added">date added</option>
+          </select>
+        </div>
       </header>
       <div class="watch-body" id="watchBody"></div>
     </section>
@@ -94,6 +97,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
     integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="app.js?v=65"></script>
+  <script src="app.js?v=66"></script>
 </body>
 </html>

@@ -27,6 +27,7 @@ const el = {
   watchBackBtn: $('watchBackBtn'),
   watchBody:    $('watchBody'),
   watchSort:    $('watchSort'),
+  watchRental:  $('watchRental'),
 };
 const screens = {
   upload:   $('screenUpload'),
@@ -462,9 +463,17 @@ function sortRows(arr, mode) {
   return arr;
 }
 
-function makeRow({ film, sources }) {
+function makeRow({ film, sources, rental }) {
   const row = document.createElement('div');
   row.className = 'watch-row';
+
+  if (rental) {
+    const mark = document.createElement('span');
+    mark.className = 'wf-rental';
+    mark.textContent = '🎟';
+    mark.title = 'on your Rental list';
+    row.appendChild(mark);
+  }
 
   const title = document.createElement('span');
   title.className = 'wf-title';
@@ -495,8 +504,10 @@ function makeRow({ film, sources }) {
 function renderWatch() {
   if (!_watch) return;
   const mode = el.watchSort.value || 'alpha';
-  const available = sortRows(_watch.available.slice(), mode);
-  const unavailable = sortRows(_watch.unavailable.slice(), mode);
+  const rentalOnly = el.watchRental.getAttribute('aria-pressed') === 'true';
+  const keep = r => !rentalOnly || r.rental;
+  const available = sortRows(_watch.available.filter(keep), mode);
+  const unavailable = sortRows(_watch.unavailable.filter(keep), mode);
 
   const frag = document.createDocumentFragment();
   available.forEach(r => frag.appendChild(makeRow(r)));   // no category header
@@ -525,16 +536,24 @@ function openWatch(db) {
     return;
   }
 
+  // The user's own "Rental" list (from the export) → set of its film keys.
+  const rentalList = db.lists.find(l => l.name !== 'Watchlist' && /rental/i.test(l.name));
+  const rentalSet = new Set((rentalList?.films || []).map(f => xrefKey(f.name, f.year)));
+  // show the toggle only when a Rental list is present
+  el.watchRental.classList.toggle('hidden', !rentalList);
+  if (!rentalList) el.watchRental.setAttribute('aria-pressed', 'false');
+
   loadXref().then(data => {
     const available = [], unavailable = [];
     watchlist.films.forEach((f, idx) => {
+      const rental = rentalSet.has(xrefKey(f.name, f.year));
       const idxs = data.films[xrefKey(f.name, f.year)];
       if (idxs) {
         const sources = idxs.map(i => data.lists[i])
           .sort((a, b) => TIER_RANK[a.tier] - TIER_RANK[b.tier]);
-        available.push({ film: f, sources, idx });
+        available.push({ film: f, sources, idx, rental });
       } else {
-        unavailable.push({ film: f, sources: null, idx });
+        unavailable.push({ film: f, sources: null, idx, rental });
       }
     });
     _watch = { available, unavailable };
@@ -592,6 +611,11 @@ function boot(db) {
   el.watchOpenBtn.onclick = () => openWatch(db);
   el.watchBackBtn.onclick = () => showScreen('controls');
   el.watchSort.onchange = () => renderWatch();
+  el.watchRental.onclick = () => {
+    const on = el.watchRental.getAttribute('aria-pressed') === 'true';
+    el.watchRental.setAttribute('aria-pressed', String(!on));
+    renderWatch();
+  };
   showScreen('controls');
 }
 
