@@ -243,7 +243,7 @@ body.result-mode .veil { opacity: 1; }
   display: flex; align-items: flex-start; justify-content: space-between;
 }
 .ctrl-top-actions {
-  display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 9px;
 }
 .ctrl-logo {
   font-size: 1rem; font-weight: 700;
@@ -381,19 +381,19 @@ select option {
    base .btn-ghost color rule defined later in the file. */
 .btn-ghost.watch-open {
   text-transform: lowercase;
-  letter-spacing: .14em;
-  color: var(--ui-bright);
-  background: rgba(255, 236, 229, 0.09);
-  border: 1px solid var(--ui);
-  padding: 8px 20px;
+  letter-spacing: .12em;
+  font-size: .62rem;
+  color: var(--ui-dim);
+  background: none;
+  border: 1px solid var(--ui-dim);
+  padding: 5px 13px;
   border-radius: 999px;                  /* pill — distinct from the square draw btn */
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.22);
-  transition: background .2s, color .2s, border-color .2s;
+  transition: color .2s, border-color .2s;
 }
 .btn-ghost.watch-open:hover {
-  background: rgba(255, 236, 229, 0.18);
-  border-color: var(--ui-bright);
-  color: #fff6f2;
+  border-color: var(--ui);
+  color: var(--ui-bright);
 }
 
 /* ── ④ What can i watch ───────────────────────────────────────── */
