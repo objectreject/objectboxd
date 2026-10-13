@@ -17,6 +17,7 @@ lists=(
 "worldscinema|kordian86|films-featured-on-worldscinemaorg|278|dlslow"
 "internetarchive|_pigsty|internet-archive|252|stream"
 "pompoarismo|pompoarism0|acervo-pompoarismo|16|stream"
+"intlfilms|hotsake|international-films-to-check-out|84|stream"
 )
 
 for entry in "${lists[@]}"; do
