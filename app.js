@@ -22,6 +22,7 @@ const el = {
   resultYear:   $('resultYear'),
   resultTitle:  $('resultTitle'),
   resultLink:   $('resultLink'),
+  resultAvail:  $('resultAvail'),
   spinAgain:    $('spinAgain'),
   watchOpenBtn: $('watchOpenBtn'),
   watchBackBtn: $('watchBackBtn'),
@@ -393,6 +394,8 @@ function spin(db) {
   fitResultTitle();
   screens.result.classList.add('reveal');
 
+  renderResultAvail(picked, myToken);                                          // subtle list links + rental mark
+
   // Poster loads in the background and crossfades into the figure when it lands.
   fetchPoster(picked.name, picked.year).then(url => {
     if (myToken === spinToken && url) showPoster(url);                          // ignore if a newer draw happened
@@ -455,9 +458,46 @@ const LIST_CODE = {
 // A row is "download only" when it's available but none of its sources stream.
 const isDownloadOnly = r => !!r.sources && r.sources.length > 0 && r.sources.every(s => s.tier !== 'stream');
 
+// Result screen: subtle bottom-right list links + a ⊠ when it's on the Rental list.
+function renderResultAvail(film, token) {
+  el.resultAvail.replaceChildren();
+  const isRental = _rentalSet.has(xrefKey(film.name, film.year));
+  const rentalEl = () => {
+    const m = document.createElement('span');
+    m.className = 'ra-rental';
+    m.textContent = '⊠';
+    m.title = 'on your Rental list';
+    return m;
+  };
+  if (isRental) el.resultAvail.appendChild(rentalEl());   // show right away
+
+  loadXref().then(data => {
+    if (token !== spinToken) return;                      // a newer draw happened
+    const idxs = data.films[xrefKey(film.name, film.year)];
+    const sources = idxs
+      ? idxs.map(i => data.lists[i]).sort((a, b) => TIER_RANK[a.tier] - TIER_RANK[b.tier])
+      : [];
+    const frag = document.createDocumentFragment();
+    for (const s of sources) {
+      const a = document.createElement('a');
+      a.className = 'ra-badge ' + s.tier;
+      a.href = s.url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = LIST_CODE[s.key] || s.name.slice(0, 2).toUpperCase();
+      a.title = s.name;
+      frag.appendChild(a);
+    }
+    if (isRental) frag.appendChild(rentalEl());
+    el.resultAvail.replaceChildren(frag);
+  }).catch(() => {});
+}
+
 let _watch = null;   // { available:[{film,sources,idx,rental}], unavailable:[...], hasRental }
 let _dir = 1;        // 1 = ascending, -1 = descending
 let _unavailOpen = false;   // collapsible "unavailable" section
+let _rentalSet = new Set(); // keys of films on the user's Rental list
+let _hasRental = false;
 
 function sortRows(arr, mode, dir) {
   // base comparators are "ascending"; dir (-1) reverses for descending
@@ -567,16 +607,13 @@ function openWatch(db) {
     return;
   }
 
-  // The user's own "Rental" list (from the export) → set of its film keys.
-  const rentalList = db.lists.find(l => l.name !== 'Watchlist' && /rental/i.test(l.name));
-  const rentalSet = new Set((rentalList?.films || []).map(f => xrefKey(f.name, f.year)));
-  if (!rentalList) el.watchRental.setAttribute('aria-pressed', 'false');
+  if (!_hasRental) el.watchRental.setAttribute('aria-pressed', 'false');
   _unavailOpen = false;                                 // unavailable starts collapsed
 
   loadXref().then(data => {
     const available = [], unavailable = [];
     watchlist.films.forEach((f, idx) => {
-      const rental = rentalSet.has(xrefKey(f.name, f.year));
+      const rental = _rentalSet.has(xrefKey(f.name, f.year));
       const idxs = data.films[xrefKey(f.name, f.year)];
       if (idxs) {
         const sources = idxs.map(i => data.lists[i])
@@ -586,7 +623,7 @@ function openWatch(db) {
         unavailable.push({ film: f, sources: null, idx, rental });
       }
     });
-    _watch = { available, unavailable, hasRental: !!rentalList };
+    _watch = { available, unavailable, hasRental: _hasRental };
     renderWatch();
   }).catch(() => {
     _watch = null;
@@ -614,11 +651,18 @@ function resetPoster() {
   el.figWindow.classList.remove('revealed');
   el.figWindow2.classList.remove('revealed');
   el.posterBack.classList.remove('show');
+  el.resultAvail.replaceChildren();              // clear the bottom-right list links
   document.body.classList.remove('result-mode'); // flip back to red bg / black text
 }
 
 function boot(db) {
   populateSelect(db);
+
+  // The user's own "Rental" list → set of keys, shared by the draw result and the torrents view.
+  const rentalList = db.lists.find(l => l.name !== 'Watchlist' && /rental/i.test(l.name));
+  _hasRental = !!rentalList;
+  _rentalSet = new Set((rentalList?.films || []).map(f => xrefKey(f.name, f.year)));
+
   el.drawBtn.onclick = () => spin(db);
   el.spinAgain.onclick = () => {
     // re-draw in place: hide the current title and let spin() reveal the next
