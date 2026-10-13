@@ -465,7 +465,7 @@ function renderResultAvail(film, token) {
   const rentalEl = () => {
     const m = document.createElement('span');     // same badge style as the list links, no link
     m.className = 'ra-badge rental';
-    m.textContent = '×';                      // × cross icon
+    m.textContent = '†';                           // same rental mark as the torrents section
     m.title = 'on your Rental list';
     return m;
   };
