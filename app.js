@@ -463,9 +463,9 @@ function renderResultAvail(film, token) {
   el.resultAvail.replaceChildren();
   const isRental = _rentalSet.has(xrefKey(film.name, film.year));
   const rentalEl = () => {
-    const m = document.createElement('span');
-    m.className = 'ra-rental';
-    m.textContent = '⊠';
+    const m = document.createElement('span');     // same badge style as the list links, no link
+    m.className = 'ra-badge rental';
+    m.textContent = '×';                      // × cross icon
     m.title = 'on your Rental list';
     return m;
   };
