@@ -695,6 +695,29 @@ function boot(db) {
   showScreen('controls');
 }
 
+// ── Upload persistence (remember the export for a week) ─────────────────────────
+
+const DB_KEY = 'objectboxd_db_v1';
+const DB_TTL = 7 * 24 * 60 * 60 * 1000;   // 1 week, then it resets to the upload screen
+
+function saveDB(db) {
+  try {
+    localStorage.setItem(DB_KEY, JSON.stringify({
+      t: Date.now(), lists: db.lists, watched: [...db.watched],
+    }));
+  } catch (e) { /* quota exceeded or storage disabled — just don't persist */ }
+}
+function loadDB() {
+  try {
+    const o = JSON.parse(localStorage.getItem(DB_KEY) || 'null');
+    if (!o || !o.t || !Array.isArray(o.lists) || (Date.now() - o.t) > DB_TTL) {
+      localStorage.removeItem(DB_KEY);
+      return null;
+    }
+    return { lists: o.lists, watched: new Set(o.watched || []) };
+  } catch (e) { return null; }
+}
+
 // ── Upload wiring ─────────────────────────────────────────────────────────────
 
 function showErr(msg) {
@@ -705,8 +728,11 @@ function showErr(msg) {
 
 async function handleFiles(files) {
   if (!files.length) return;
-  try { boot(await processFiles(Array.from(files))); }
-  catch (e) { showErr(e.message); }
+  try {
+    const db = await processFiles(Array.from(files));
+    saveDB(db);                    // remember it for next time
+    boot(db);
+  } catch (e) { showErr(e.message); }
 }
 
 el.fileInput.addEventListener('change', e => handleFiles(e.target.files));
@@ -720,5 +746,8 @@ el.dropzone.addEventListener('drop', e => {
   handleFiles(e.dataTransfer.files);
 });
 
-// Always start at upload — no saved state
-showScreen('upload');
+// Restore a recent upload (within the week) so you don't have to re-upload;
+// otherwise start at the upload screen.
+const _cached = loadDB();
+if (_cached) boot(_cached);
+else showScreen('upload');
