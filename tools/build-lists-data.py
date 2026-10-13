@@ -18,6 +18,7 @@ LISTS = [
     {"key":"internetarchive", "name":"Internet Archive", "tier":"stream", "url":"https://letterboxd.com/_pigsty/list/internet-archive/"},
     {"key":"pompoarismo", "name":"Acervo Pompoarismo", "tier":"stream", "url":"https://letterboxd.com/pompoarism0/list/acervo-pompoarismo/"},
     {"key":"intlfilms", "name":"International Films to Check Out", "tier":"stream", "url":"https://letterboxd.com/hotsake/list/international-films-to-check-out/"},
+    {"key":"outragechannel", "name":"The Outrage Channel", "tier":"stream", "url":"https://letterboxd.com/fakeoutrage/list/everything-on-the-outrage-channel-1/"},
 ]
 
 NAME_RE = re.compile(r'^(.*)\s+\((\d{4})\)\s*$')
