@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Merge the scraped TSVs into a compact lists-data.json for objectboxd.
 # Key = alnum(lowercased title) + "|" + year  (matched identically in JS).
-import re, json, unicodedata, os, datetime
+import re, json, unicodedata, os, datetime, html
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "out")
@@ -42,7 +42,7 @@ for idx, L in enumerate(LISTS):
             parts = line.split("\t")
             if len(parts) < 2:
                 continue
-            name = parts[1]
+            name = html.unescape(parts[1])   # decode &#039; &amp; &quot; etc. before keying
             m = NAME_RE.match(name)
             if not m:
                 continue   # no year → skip (can't match reliably)

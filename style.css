@@ -412,6 +412,20 @@ select option {
 .watch-head .btn-ghost { color: rgba(224, 120, 110, 0.7); }
 .watch-head .btn-ghost:hover { color: #ff4030; }
 
+/* available / unavailable tabs */
+.watch-tabs { display: flex; gap: 6px; }
+.watch-tab {
+  font-family: var(--font);
+  font-size: .66rem; letter-spacing: .14em; text-transform: uppercase;
+  color: rgba(224, 120, 110, 0.6);
+  background: transparent; border: none;
+  border-bottom: 2px solid transparent;
+  padding: 4px 10px 7px; cursor: pointer;
+  transition: color .18s, border-color .18s;
+}
+.watch-tab:hover { color: #ff6a5e; }
+.watch-tab[aria-selected="true"] { color: #ff4030; border-bottom-color: #d6201a; font-weight: 700; }
+
 .watch-controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: flex-end; }
 
 /* filter toggles — pills with distinct accents (teal rental, amber downloads) */

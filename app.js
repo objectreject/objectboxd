@@ -29,6 +29,7 @@ const el = {
   watchSort:    $('watchSort'),
   watchRental:  $('watchRental'),
   watchDownloads: $('watchDownloads'),
+  watchTabs:    $('watchTabs'),
 };
 const screens = {
   upload:   $('screenUpload'),
@@ -428,7 +429,7 @@ let xrefLoading = null;
 function loadXref() {
   if (xrefData) return Promise.resolve(xrefData);
   if (xrefLoading) return xrefLoading;
-  xrefLoading = fetch('lists-data.json?v=1')
+  xrefLoading = fetch('lists-data.json?v=2')
     .then(r => { if (!r.ok) throw new Error('data'); return r.json(); })
     .then(d => { xrefData = d; return d; });
   return xrefLoading;
@@ -454,7 +455,8 @@ const LIST_CODE = {
 // A row is "download only" when it's available but none of its sources stream.
 const isDownloadOnly = r => !!r.sources && r.sources.length > 0 && r.sources.every(s => s.tier !== 'stream');
 
-let _watch = null;   // { available:[{film,sources,idx}], unavailable:[{film,idx}] }
+let _watch = null;   // { available:[{film,sources,idx,rental}], unavailable:[...], hasRental }
+let _tab = 'available';
 
 function sortRows(arr, mode) {
   const cmp = {
@@ -509,27 +511,40 @@ function makeRow({ film, sources, rental }) {
 function renderWatch() {
   if (!_watch) return;
   const mode = el.watchSort.value || 'alpha';
-  const hideRentals = el.watchRental.getAttribute('aria-pressed') === 'true';
-  const dlOnly = el.watchDownloads.getAttribute('aria-pressed') === 'true';
-  const keep = r =>
-    (!hideRentals || !r.rental) &&          // on → drop films you already have as rentals
-    (!dlOnly || isDownloadOnly(r));         // on → keep only films with no streaming option
-  const available = sortRows(_watch.available.filter(keep), mode);
-  const unavailable = sortRows(_watch.unavailable.filter(keep), mode);
+  const onUnavail = _tab === 'unavailable';
+
+  // tab labels with counts; active state
+  [...el.watchTabs.children].forEach(t => {
+    const which = t.dataset.tab;
+    const n = which === 'available' ? _watch.available.length : _watch.unavailable.length;
+    t.textContent = `${which} ${n}`;
+    t.setAttribute('aria-selected', String(which === _tab));
+  });
+
+  // filters belong to the available tab only — unavailable stays reachable regardless
+  el.watchDownloads.classList.toggle('hidden', onUnavail);
+  el.watchRental.classList.toggle('hidden', onUnavail || !_watch.hasRental);
+
+  let rows;
+  if (onUnavail) {
+    rows = sortRows(_watch.unavailable.slice(), mode);
+  } else {
+    const hideRentals = el.watchRental.getAttribute('aria-pressed') === 'true';
+    const dlOnly = el.watchDownloads.getAttribute('aria-pressed') === 'true';
+    rows = sortRows(_watch.available.filter(r =>
+      (!hideRentals || !r.rental) &&        // drop films already on the Rental list
+      (!dlOnly || isDownloadOnly(r))        // keep only films with no streaming option
+    ), mode);
+  }
 
   const frag = document.createDocumentFragment();
-  available.forEach(r => frag.appendChild(makeRow(r)));   // no category header
-
-  if (unavailable.length) {
-    const head = document.createElement('div');
-    head.className = 'watch-section-head unavail';
-    head.innerHTML = `<span>unavailable</span><span class="wc">${unavailable.length}</span>`;
-    frag.appendChild(head);
-    unavailable.forEach(r => {
-      const row = makeRow(r);
-      row.classList.add('wf-unavail');
-      frag.appendChild(row);
-    });
+  if (!rows.length) {
+    const p = document.createElement('p');
+    p.className = 'watch-empty';
+    p.textContent = onUnavail ? 'Nothing here.' : 'No films match these filters.';
+    frag.appendChild(p);
+  } else {
+    rows.forEach(r => frag.appendChild(makeRow(r)));
   }
   el.watchBody.replaceChildren(frag);
 }
@@ -547,9 +562,8 @@ function openWatch(db) {
   // The user's own "Rental" list (from the export) → set of its film keys.
   const rentalList = db.lists.find(l => l.name !== 'Watchlist' && /rental/i.test(l.name));
   const rentalSet = new Set((rentalList?.films || []).map(f => xrefKey(f.name, f.year)));
-  // show the toggle only when a Rental list is present
-  el.watchRental.classList.toggle('hidden', !rentalList);
   if (!rentalList) el.watchRental.setAttribute('aria-pressed', 'false');
+  _tab = 'available';                                   // always open on the available tab
 
   loadXref().then(data => {
     const available = [], unavailable = [];
@@ -564,7 +578,7 @@ function openWatch(db) {
         unavailable.push({ film: f, sources: null, idx, rental });
       }
     });
-    _watch = { available, unavailable };
+    _watch = { available, unavailable, hasRental: !!rentalList };
     renderWatch();
   }).catch(() => {
     _watch = null;
@@ -625,6 +639,12 @@ function boot(db) {
   };
   el.watchRental.onclick = () => toggleBtn(el.watchRental);
   el.watchDownloads.onclick = () => toggleBtn(el.watchDownloads);
+  el.watchTabs.addEventListener('click', e => {
+    const tab = e.target.closest('.watch-tab');
+    if (!tab) return;
+    _tab = tab.dataset.tab;
+    renderWatch();
+  });
   showScreen('controls');
 }
 
