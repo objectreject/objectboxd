@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>objectboxd</title>
-  <link rel="stylesheet" href="style.css?v=62" />
+  <link rel="stylesheet" href="style.css?v=63" />
 </head>
 <body>
 
@@ -56,6 +56,17 @@
         </div>
       </div>
       <button class="draw-btn" id="drawBtn">draw</button>
+      <button class="btn-ghost watch-open" id="watchOpenBtn">◎ what can i watch</button>
+    </section>
+
+    <!-- ④ WHAT CAN I WATCH (watchlist ∩ followed lists) -->
+    <section class="screen hidden" id="screenWatch">
+      <header class="watch-head">
+        <button class="btn-ghost" id="watchBackBtn">← back</button>
+        <h2 class="watch-title">what can i watch</h2>
+        <p class="watch-sub" id="watchSummary">cross-referencing your watchlist…</p>
+      </header>
+      <div class="watch-body" id="watchBody"></div>
     </section>
 
     <!-- ③ RESULT -->
@@ -78,6 +89,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
     integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="app.js?v=62"></script>
+  <script src="app.js?v=63"></script>
 </body>
 </html>

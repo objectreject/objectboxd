@@ -367,6 +367,104 @@ select option {
   to   { opacity: 1; transform: none; }
 }
 
+/* ── "what can i watch" entry on controls ────────────────────── */
+.watch-open {
+  align-self: center;
+  letter-spacing: .16em;
+  color: var(--ui-dim);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.22);
+}
+.watch-open:hover { color: var(--ui-bright); }
+
+/* ── ④ What can i watch ───────────────────────────────────────── */
+
+/* dark, readable panel over the (still-spinning) sphere */
+#screenWatch {
+  background: rgba(5, 4, 4, 0.94);
+  color: #e9c4bf;
+  overflow: hidden;
+  padding: 0;
+}
+
+.watch-head {
+  position: relative;
+  padding: 30px 40px 18px;
+  border-bottom: 1px solid rgba(214, 32, 26, 0.22);
+  flex: 0 0 auto;
+}
+.watch-head .btn-ghost { color: rgba(224, 120, 110, 0.7); }
+.watch-head .btn-ghost:hover { color: #ff4030; }
+.watch-title {
+  font-family: var(--font);
+  font-size: 1.5rem; font-weight: 900; letter-spacing: -.01em;
+  text-transform: lowercase; color: #d6201a;
+  margin: 10px 0 4px;
+}
+.watch-sub {
+  font-size: .62rem; letter-spacing: .14em; text-transform: uppercase;
+  color: rgba(224, 120, 110, 0.72);
+}
+
+.watch-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 10px 40px 60px;
+  -webkit-overflow-scrolling: touch;
+}
+.watch-body::-webkit-scrollbar { width: 9px; }
+.watch-body::-webkit-scrollbar-thumb {
+  background: rgba(214, 32, 26, 0.3); border-radius: 5px;
+}
+
+.watch-section { margin-top: 26px; }
+.watch-section-head {
+  display: flex; align-items: baseline; gap: 10px;
+  font-size: .72rem; letter-spacing: .18em; text-transform: uppercase;
+  color: #d6201a;
+  padding-bottom: 8px; margin-bottom: 4px;
+  border-bottom: 1px solid rgba(214, 32, 26, 0.18);
+}
+.watch-section-head .wc { color: rgba(224, 120, 110, 0.6); letter-spacing: .1em; }
+.watch-section.slow .watch-section-head { color: #ffb02e; }
+.watch-section.slow .watch-section-head .wc { color: rgba(255, 176, 46, 0.6); }
+
+.watch-row {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 14px;
+  padding: 11px 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.watch-row .wf-title {
+  font-size: 1rem; font-weight: 700; color: #f0d6d2;
+  letter-spacing: .01em;
+}
+.watch-row .wf-year {
+  font-size: .72rem; color: rgba(224, 120, 110, 0.6);
+  letter-spacing: .08em;
+}
+.wf-sources { display: flex; gap: 7px; flex-wrap: wrap; margin-left: auto; }
+.wf-badge {
+  font-size: .56rem; letter-spacing: .1em; text-transform: uppercase;
+  text-decoration: none;
+  padding: 3px 9px; border-radius: 2px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.wf-badge.stream { color: #ff6a5e; background: rgba(214, 32, 26, 0.14); border-color: rgba(214, 32, 26, 0.4); }
+.wf-badge.dlfast { color: #ff9e6a; background: rgba(255, 130, 60, 0.12); border-color: rgba(255, 130, 60, 0.4); }
+.wf-badge.dlslow { color: #ffc766; background: rgba(255, 176, 46, 0.1); border-color: rgba(255, 176, 46, 0.4); }
+.wf-badge:hover { filter: brightness(1.25); }
+.wf-flag {
+  flex-basis: 100%;
+  font-size: .58rem; letter-spacing: .1em; text-transform: uppercase;
+  color: #ffb02e; opacity: .85; margin-top: 2px;
+}
+.watch-empty {
+  margin-top: 40px; text-align: center;
+  font-size: .72rem; letter-spacing: .12em; text-transform: uppercase;
+  color: rgba(224, 120, 110, 0.6); line-height: 2;
+}
+
 /* ── Shared ghost button ─────────────────────────────────────── */
 .btn-ghost {
   background: none; border: none; font-family: var(--font);
@@ -382,4 +480,7 @@ select option {
   #screenControls { padding: 24px 20px 36px; }
   #screenResult { padding: 0 20px 40px; }
   .ctrl-top { top: 24px; }
+  .watch-head { padding: 24px 20px 16px; }
+  .watch-body { padding: 10px 20px 60px; }
+  .wf-sources { margin-left: 0; flex-basis: 100%; }
 }

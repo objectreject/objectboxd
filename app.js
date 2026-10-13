@@ -23,11 +23,16 @@ const el = {
   resultTitle:  $('resultTitle'),
   resultLink:   $('resultLink'),
   spinAgain:    $('spinAgain'),
+  watchOpenBtn: $('watchOpenBtn'),
+  watchBackBtn: $('watchBackBtn'),
+  watchBody:    $('watchBody'),
+  watchSummary: $('watchSummary'),
 };
 const screens = {
   upload:   $('screenUpload'),
   controls: $('screenControls'),
   result:   $('screenResult'),
+  watch:    $('screenWatch'),
 };
 
 // ── Text Sphere ───────────────────────────────────────────────────────────────
@@ -412,6 +417,121 @@ window.addEventListener('resize', () => {
   clearTimeout(_fitT); _fitT = setTimeout(fitResultTitle, 150);
 });
 
+// ── What can i watch (watchlist ∩ followed lists) ───────────────────────────────
+
+// Bundled snapshot of the followed lists (membership only). Lazy-loaded on first open.
+let xrefData = null;
+let xrefLoading = null;
+
+function loadXref() {
+  if (xrefData) return Promise.resolve(xrefData);
+  if (xrefLoading) return xrefLoading;
+  xrefLoading = fetch('lists-data.json?v=1')
+    .then(r => { if (!r.ok) throw new Error('data'); return r.json(); })
+    .then(d => { xrefData = d; return d; });
+  return xrefLoading;
+}
+
+// Match key: NFC + lowercase + keep only unicode letters/numbers + "|year".
+// Mirrors build.py exactly so both sides key identically.
+function xrefKey(name, year) {
+  const t = (name || '').normalize('NFC').toLowerCase();
+  let out = '';
+  for (const c of t) if (/[\p{L}\p{N}]/u.test(c)) out += c;
+  return out + '|' + (year || '').trim();
+}
+
+const TIER_RANK = { stream: 0, dlfast: 1, dlslow: 2 };
+const SECTIONS = [
+  { tier: 'stream', label: '▶ streaming',             cls: '' },
+  { tier: 'dlfast', label: '⬇ download — fast',        cls: '' },
+  { tier: 'dlslow', label: '🐢 download — slow · start these ahead', cls: 'slow' },
+];
+
+function openWatch(db) {
+  showScreen('watch');
+  const watchlist = db.lists.find(l => l.name === 'Watchlist');
+  if (!watchlist || !watchlist.films.length) {
+    el.watchSummary.textContent = 'no watchlist found in your export';
+    el.watchBody.innerHTML = '<p class="watch-empty">Your export didn’t include a watchlist.<br>Re-upload the full .zip from Letterboxd.</p>';
+    return;
+  }
+  el.watchSummary.textContent = 'cross-referencing your watchlist…';
+  el.watchBody.innerHTML = '';
+
+  loadXref().then(data => {
+    const total = watchlist.films.length;
+    const buckets = { stream: [], dlfast: [], dlslow: [] };
+
+    for (const f of watchlist.films) {
+      const idxs = data.films[xrefKey(f.name, f.year)];
+      if (!idxs) continue;
+      const sources = idxs.map(i => data.lists[i])
+        .sort((a, b) => TIER_RANK[a.tier] - TIER_RANK[b.tier]);
+      const category = sources[0].tier;              // best availability wins
+      buckets[category].push({ film: f, sources });
+    }
+
+    const matched = buckets.stream.length + buckets.dlfast.length + buckets.dlslow.length;
+    if (!matched) {
+      el.watchSummary.textContent = `0 of ${total} on your watchlist are on these lists`;
+      el.watchBody.innerHTML = '<p class="watch-empty">None of your watchlist is on the followed lists yet.</p>';
+      return;
+    }
+
+    const streamN = buckets.stream.length;
+    const dlN = buckets.dlfast.length + buckets.dlslow.length;
+    el.watchSummary.textContent =
+      `${matched} of ${total} available · ${streamN} streaming · ${dlN} download`;
+
+    const frag = document.createDocumentFragment();
+    for (const sec of SECTIONS) {
+      const rows = buckets[sec.tier];
+      if (!rows.length) continue;
+      rows.sort((a, b) => (a.film.name || '').localeCompare(b.film.name || ''));
+
+      const section = document.createElement('div');
+      section.className = 'watch-section' + (sec.cls ? ' ' + sec.cls : '');
+      const head = document.createElement('div');
+      head.className = 'watch-section-head';
+      head.innerHTML = `<span>${sec.label}</span><span class="wc">${rows.length}</span>`;
+      section.appendChild(head);
+
+      for (const { film, sources } of rows) {
+        const row = document.createElement('div');
+        row.className = 'watch-row';
+
+        const title = document.createElement('span');
+        title.className = 'wf-title';
+        title.textContent = film.name;
+        const year = document.createElement('span');
+        year.className = 'wf-year';
+        year.textContent = film.year || '';
+
+        const srcWrap = document.createElement('span');
+        srcWrap.className = 'wf-sources';
+        for (const s of sources) {
+          const a = document.createElement('a');
+          a.className = 'wf-badge ' + s.tier;
+          a.href = s.url;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.textContent = s.name;
+          srcWrap.appendChild(a);
+        }
+
+        row.append(title, year, srcWrap);
+        section.appendChild(row);
+      }
+      frag.appendChild(section);
+    }
+    el.watchBody.replaceChildren(frag);
+  }).catch(() => {
+    el.watchSummary.textContent = 'couldn’t load the list data';
+    el.watchBody.innerHTML = '<p class="watch-empty">The list snapshot failed to load.<br>Try again in a moment.</p>';
+  });
+}
+
 // ── Boot ──────────────────────────────────────────────────────────────────────
 
 // Two stacked poster layers; alternate which one is shown so the new poster
@@ -456,6 +576,8 @@ function boot(db) {
     sphere.setWords([IDLE]);
     showScreen('upload');
   };
+  el.watchOpenBtn.onclick = () => openWatch(db);
+  el.watchBackBtn.onclick = () => showScreen('controls');
   showScreen('controls');
 }
 
