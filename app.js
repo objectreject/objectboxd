@@ -586,31 +586,29 @@ function renderWatch() {
   el.watchUnavail.dataset.state = _unavailMode;
   el.watchUnavail.textContent = 'unavailable: ' + _unavailMode;
 
-  const avail = sortRows(_watch.available.filter(passesFilters), mode, _dir);
-  const unavail = sortRows(_watch.unavailable.filter(passesFilters), mode, _dir);
+  const avail = _watch.available.filter(passesFilters).map(r => ({ ...r, _un: false }));
+  const unavail = _watch.unavailable.filter(passesFilters).map(r => ({ ...r, _un: true }));
+
+  // "on" merges unavailable into the available list and sorts them together;
+  // "only" shows just unavailable; "off" shows just available.
+  let rows;
+  if (_unavailMode === 'only') rows = unavail;
+  else if (_unavailMode === 'on') rows = avail.concat(unavail);
+  else rows = avail;
+  rows = sortRows(rows, mode, _dir);
 
   const frag = document.createDocumentFragment();
-  const addRows = (rows, dim) => rows.forEach(r => {
-    const row = makeRow(r);
-    if (dim) row.classList.add('wf-dim');
-    frag.appendChild(row);
-  });
-  const empty = txt => { const p = document.createElement('p'); p.className = 'watch-empty'; p.textContent = txt; frag.appendChild(p); };
-  const divider = () => {
-    const d = document.createElement('div');
-    d.className = 'watch-divider';
-    d.innerHTML = '<span class="wd-line"></span><span class="wd-label">unavailable</span><span class="wd-line"></span>';
-    frag.appendChild(d);
-  };
-
-  if (_unavailMode === 'only') {
-    unavail.length ? addRows(unavail, true) : empty('No unavailable films match these filters.');
+  if (!rows.length) {
+    const p = document.createElement('p');
+    p.className = 'watch-empty';
+    p.textContent = _unavailMode === 'only' ? 'No unavailable films match these filters.' : 'No films match these filters.';
+    frag.appendChild(p);
   } else {
-    avail.length ? addRows(avail, false) : empty('No films match these filters.');
-    if (_unavailMode === 'on') {
-      divider();
-      unavail.length ? addRows(unavail, true) : empty('No unavailable films match these filters.');
-    }
+    rows.forEach(r => {
+      const row = makeRow(r);
+      if (r._un) row.classList.add('wf-dim');   // unavailable rows read dimmer, interleaved in sort order
+      frag.appendChild(row);
+    });
   }
   el.watchBody.replaceChildren(frag);
 }

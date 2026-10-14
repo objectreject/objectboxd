@@ -432,21 +432,16 @@ select option {
   border-radius: 999px; padding: 5px 13px; cursor: pointer; white-space: nowrap;
   transition: color .18s, border-color .18s, background .18s;
 }
-/* rentals: "on" is neutral; "off"/"only" are active (teal) */
-.rental-toggle:hover { color: #86e0d4; border-color: rgba(134, 224, 212, 0.6); }
-.rental-toggle[data-state="off"], .rental-toggle[data-state="only"] {
-  color: #0a0404; background: #6fd3c7; border-color: #6fd3c7; font-weight: 700;
-}
+/* each tri-state is one hue, light -> dark across on/off/only */
+.rental-toggle[data-state="on"]   { color: #0a0404; background: #a8e6dd; border-color: #a8e6dd; font-weight: 700; } /* teal light — all */
+.rental-toggle[data-state="off"]  { color: #0a0404; background: #6fd3c7; border-color: #6fd3c7; font-weight: 700; } /* teal mid — hidden */
+.rental-toggle[data-state="only"] { color: #fff6f4; background: #2f8a7e; border-color: #2f8a7e; font-weight: 700; } /* teal dark — only */
+.unavail-toggle[data-state="off"]  { color: #0a0404; background: #f0c3cd; border-color: #f0c3cd; font-weight: 700; } /* rose light — off */
+.unavail-toggle[data-state="on"]   { color: #0a0404; background: #d98fa0; border-color: #d98fa0; font-weight: 700; } /* rose mid — shown */
+.unavail-toggle[data-state="only"] { color: #fff6f4; background: #9c4f60; border-color: #9c4f60; font-weight: 700; } /* rose dark — only */
 /* downloads: amber when on */
-.dl-toggle:hover { color: #ffbd6e; border-color: rgba(255, 189, 110, 0.6); }
-.dl-toggle[aria-pressed="true"] {
-  color: #0a0404; background: #e0a44a; border-color: #e0a44a; font-weight: 700;
-}
-/* unavailable: "off" is neutral; "on"/"only" are active (red) */
-.unavail-toggle:hover { color: #ff7a6e; border-color: rgba(214, 32, 26, 0.6); }
-.unavail-toggle[data-state="on"], .unavail-toggle[data-state="only"] {
-  color: #fff2f0; background: rgba(214, 32, 26, 0.85); border-color: #d6201a; font-weight: 700;
-}
+.dl-toggle[aria-pressed="true"] { color: #0a0404; background: #e0a44a; border-color: #e0a44a; font-weight: 700; }
+.rental-toggle:hover, .unavail-toggle:hover, .dl-toggle:hover { filter: brightness(1.08); }
 
 .wf-rental {
   color: #6fd3c7; margin-right: 1px; font-size: .92rem; line-height: 1;
