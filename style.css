@@ -422,23 +422,30 @@ select option {
 
 .watch-controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: flex-end; }
 
-/* filter toggles — pills with distinct accents (teal rental, amber downloads) */
-.rental-toggle, .dl-toggle {
+/* filter toggles — pills with distinct accents (teal rental, amber downloads, red unavailable) */
+.rental-toggle, .dl-toggle, .unavail-toggle {
   font-family: var(--font);
-  font-size: .62rem; letter-spacing: .12em; text-transform: uppercase;
+  font-size: .62rem; letter-spacing: .1em; text-transform: uppercase;
   color: rgba(224, 120, 110, 0.72);
   background: transparent;
   border: 1px solid rgba(224, 120, 110, 0.38);
-  border-radius: 999px; padding: 5px 13px; cursor: pointer;
+  border-radius: 999px; padding: 5px 13px; cursor: pointer; white-space: nowrap;
   transition: color .18s, border-color .18s, background .18s;
 }
+/* rentals: "on" is neutral; "off"/"only" are active (teal) */
 .rental-toggle:hover { color: #86e0d4; border-color: rgba(134, 224, 212, 0.6); }
-.rental-toggle[aria-pressed="true"] {
+.rental-toggle[data-state="off"], .rental-toggle[data-state="only"] {
   color: #0a0404; background: #6fd3c7; border-color: #6fd3c7; font-weight: 700;
 }
+/* downloads: amber when on */
 .dl-toggle:hover { color: #ffbd6e; border-color: rgba(255, 189, 110, 0.6); }
 .dl-toggle[aria-pressed="true"] {
   color: #0a0404; background: #e0a44a; border-color: #e0a44a; font-weight: 700;
+}
+/* unavailable: "off" is neutral; "on"/"only" are active (red) */
+.unavail-toggle:hover { color: #ff7a6e; border-color: rgba(214, 32, 26, 0.6); }
+.unavail-toggle[data-state="on"], .unavail-toggle[data-state="only"] {
+  color: #fff2f0; background: rgba(214, 32, 26, 0.85); border-color: #d6201a; font-weight: 700;
 }
 
 .wf-rental {
@@ -493,27 +500,18 @@ select option {
 /* unavailable = on your watchlist but not on any followed list */
 .watch-section-head.unavail { color: rgba(224, 120, 110, 0.55); border-bottom-color: rgba(255, 255, 255, 0.08); }
 .watch-section-head.unavail .wc { color: rgba(224, 120, 110, 0.4); }
-/* collapsible "unavailable" divider: centered label on a long thin line */
-.unavail-bar {
-  display: flex; align-items: center; gap: 14px;
-  width: 100%; margin: 32px 0 2px;
-  background: none; border: none; cursor: pointer; padding: 6px 0;
-}
-.ub-line { flex: 1; height: 1px; background: rgba(224, 120, 110, 0.22); transition: background .18s; }
-.ub-label {
+/* static "unavailable" divider: centered label on a long thin line */
+.watch-divider { display: flex; align-items: center; gap: 14px; width: 100%; margin: 30px 0 4px; }
+.wd-line { flex: 1; height: 1px; background: rgba(224, 120, 110, 0.22); }
+.wd-label {
   font-size: .62rem; letter-spacing: .22em; text-transform: uppercase;
   color: rgba(224, 120, 110, 0.6); white-space: nowrap;
-  display: inline-flex; align-items: center; gap: 7px; transition: color .18s;
 }
-.unavail-bar:hover .ub-label { color: #ff6a5e; }
-.unavail-bar:hover .ub-line { background: rgba(255, 106, 94, 0.3); }
-.ub-arrow { display: inline-block; font-size: .8rem; transition: transform .2s; }
-.unavail-bar[aria-expanded="true"] .ub-arrow { transform: rotate(180deg); }
 
-/* the revealed unavailable rows read quieter than the online list */
-.unavail-list .wf-title { color: rgba(224, 180, 174, 0.5); font-weight: 600; }
-.unavail-list a.wf-title:hover { color: #ff6a5e; }
-.unavail-list .watch-row { border-bottom-color: rgba(255, 255, 255, 0.03); }
+/* unavailable rows read quieter than the available list */
+.wf-dim .wf-title { color: rgba(224, 180, 174, 0.5); font-weight: 600; }
+.wf-dim a.wf-title:hover { color: #ff6a5e; }
+.wf-dim.watch-row { border-bottom-color: rgba(255, 255, 255, 0.03); }
 
 .watch-row {
   display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 14px;

@@ -30,6 +30,7 @@ const el = {
   watchSort:    $('watchSort'),
   watchRental:  $('watchRental'),
   watchDownloads: $('watchDownloads'),
+  watchUnavail: $('watchUnavail'),
   watchSortDir: $('watchSortDir'),
 };
 const screens = {
@@ -508,7 +509,8 @@ function renderResultAvail(film, token) {
 
 let _watch = null;   // { available:[{film,sources,idx,rental}], unavailable:[...], hasRental }
 let _dir = 1;        // 1 = ascending, -1 = descending
-let _unavailOpen = false;   // collapsible "unavailable" section
+let _rentalMode = 'on';     // 'on' (show all) | 'off' (hide rentals) | 'only' (rentals only)
+let _unavailMode = 'off';   // 'off' (hidden) | 'on' (shown below) | 'only' (only unavailable)
 let _rentalSet = new Set(); // keys of films on the user's Rental list
 let _hasRental = false;
 
@@ -563,48 +565,51 @@ function makeRow({ film, sources, rental }) {
   return row;
 }
 
+// filters apply to BOTH the available and unavailable lists
+function passesFilters(r) {
+  const dlOnly = el.watchDownloads.getAttribute('aria-pressed') === 'true';
+  if (dlOnly && !isDownloadOnly(r)) return false;      // only films with no streaming option
+  if (_rentalMode === 'off' && r.rental) return false; // hide rentals
+  if (_rentalMode === 'only' && !r.rental) return false;
+  return true;
+}
+
 function renderWatch() {
   if (!_watch) return;
   const mode = el.watchSort.value || 'alpha';
   el.watchSortDir.textContent = _dir === 1 ? '↑' : '↓';
-  el.watchRental.classList.toggle('hidden', !_watch.hasRental);
 
-  // online list = available films, filtered + sorted
-  const hideRentals = el.watchRental.getAttribute('aria-pressed') === 'true';
-  const dlOnly = el.watchDownloads.getAttribute('aria-pressed') === 'true';
-  const online = sortRows(_watch.available.filter(r =>
-    (!hideRentals || !r.rental) &&          // drop films already on the Rental list
-    (!dlOnly || isDownloadOnly(r))          // keep only films with no streaming option
-  ), mode, _dir);
-  const unavail = sortRows(_watch.unavailable.slice(), mode, _dir);
+  // control states / labels
+  el.watchRental.classList.toggle('hidden', !_watch.hasRental);
+  el.watchRental.dataset.state = _rentalMode;
+  el.watchRental.textContent = 'rentals: ' + _rentalMode;
+  el.watchUnavail.dataset.state = _unavailMode;
+  el.watchUnavail.textContent = 'unavailable: ' + _unavailMode;
+
+  const avail = sortRows(_watch.available.filter(passesFilters), mode, _dir);
+  const unavail = sortRows(_watch.unavailable.filter(passesFilters), mode, _dir);
 
   const frag = document.createDocumentFragment();
-  if (!online.length) {
-    const p = document.createElement('p');
-    p.className = 'watch-empty';
-    p.textContent = 'No films match these filters.';
-    frag.appendChild(p);
+  const addRows = (rows, dim) => rows.forEach(r => {
+    const row = makeRow(r);
+    if (dim) row.classList.add('wf-dim');
+    frag.appendChild(row);
+  });
+  const empty = txt => { const p = document.createElement('p'); p.className = 'watch-empty'; p.textContent = txt; frag.appendChild(p); };
+  const divider = () => {
+    const d = document.createElement('div');
+    d.className = 'watch-divider';
+    d.innerHTML = '<span class="wd-line"></span><span class="wd-label">unavailable</span><span class="wd-line"></span>';
+    frag.appendChild(d);
+  };
+
+  if (_unavailMode === 'only') {
+    unavail.length ? addRows(unavail, true) : empty('No unavailable films match these filters.');
   } else {
-    online.forEach(r => frag.appendChild(makeRow(r)));
-  }
-
-  // collapsible "unavailable" divider bar (centered label on a long thin line)
-  if (unavail.length) {
-    const bar = document.createElement('button');
-    bar.className = 'unavail-bar';
-    bar.setAttribute('aria-expanded', String(_unavailOpen));
-    bar.innerHTML =
-      '<span class="ub-line"></span>' +
-      '<span class="ub-label">unavailable <span class="ub-arrow">⌄</span></span>' +
-      '<span class="ub-line"></span>';
-    bar.onclick = () => { _unavailOpen = !_unavailOpen; renderWatch(); };
-    frag.appendChild(bar);
-
-    if (_unavailOpen) {
-      const wrap = document.createElement('div');
-      wrap.className = 'unavail-list';
-      unavail.forEach(r => wrap.appendChild(makeRow(r)));
-      frag.appendChild(wrap);
+    avail.length ? addRows(avail, false) : empty('No films match these filters.');
+    if (_unavailMode === 'on') {
+      divider();
+      unavail.length ? addRows(unavail, true) : empty('No unavailable films match these filters.');
     }
   }
   el.watchBody.replaceChildren(frag);
@@ -620,8 +625,8 @@ function openWatch(db) {
     return;
   }
 
-  if (!_hasRental) el.watchRental.setAttribute('aria-pressed', 'false');
-  _unavailOpen = false;                                 // unavailable starts collapsed
+  _rentalMode = 'on';                                   // reset controls to defaults on open
+  _unavailMode = 'off';
 
   loadXref().then(data => {
     const available = [], unavailable = [];
@@ -699,12 +704,13 @@ function boot(db) {
   el.watchBackBtn.onclick = () => showScreen('controls');
   el.watchSort.onchange = () => renderWatch();
   el.watchSortDir.onclick = () => { _dir = -_dir; renderWatch(); };
-  const toggleBtn = btn => {
-    btn.setAttribute('aria-pressed', String(btn.getAttribute('aria-pressed') !== 'true'));
+  el.watchDownloads.onclick = () => {
+    el.watchDownloads.setAttribute('aria-pressed', String(el.watchDownloads.getAttribute('aria-pressed') !== 'true'));
     renderWatch();
   };
-  el.watchRental.onclick = () => toggleBtn(el.watchRental);
-  el.watchDownloads.onclick = () => toggleBtn(el.watchDownloads);
+  const cycle = (cur, seq) => seq[(seq.indexOf(cur) + 1) % seq.length];
+  el.watchRental.onclick = () => { _rentalMode = cycle(_rentalMode, ['on', 'off', 'only']); renderWatch(); };
+  el.watchUnavail.onclick = () => { _unavailMode = cycle(_unavailMode, ['off', 'on', 'only']); renderWatch(); };
   showScreen('controls');
 }
 
