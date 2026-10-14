@@ -340,8 +340,11 @@ async function fetchPoster(name, year) {
 
 // ── Routing ───────────────────────────────────────────────────────────────────
 
+const _themeMeta = document.querySelector('meta[name="theme-color"]');
 function showScreen(name) {
   Object.entries(screens).forEach(([k, s]) => s.classList.toggle('hidden', k !== name));
+  // keep the mobile status-bar tint in step with the screen (dark on result/torrents)
+  if (_themeMeta) _themeMeta.content = (name === 'result' || name === 'watch') ? '#050404' : '#b10411';
 }
 
 // ── Select population ─────────────────────────────────────────────────────────
