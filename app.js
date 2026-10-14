@@ -547,7 +547,7 @@ function makeRow({ film, sources, rental }) {
   if (!sources || !sources.length) {              // unavailable: not on any followed list
     const mark = document.createElement('span');
     mark.className = 'wf-unavail-mark';
-    mark.textContent = '‡';
+    mark.textContent = '⁑';
     mark.title = 'not on any list';
     row.appendChild(mark);
   }
