@@ -544,6 +544,13 @@ function makeRow({ film, sources, rental }) {
     mark.title = 'on your Rental list';
     row.appendChild(mark);
   }
+  if (!sources || !sources.length) {              // unavailable: not on any followed list
+    const mark = document.createElement('span');
+    mark.className = 'wf-unavail-mark';
+    mark.textContent = '‡';
+    mark.title = 'not on any list';
+    row.appendChild(mark);
+  }
 
   const title = document.createElement('a');
   title.className = 'wf-title';

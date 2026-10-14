@@ -448,6 +448,10 @@ select option {
   color: #6fd3c7; margin-right: 1px; font-size: .92rem; line-height: 1;
   flex: 0 0 auto;
 }
+.wf-unavail-mark {
+  color: #d98fa0; margin-right: 1px; font-size: .92rem; line-height: 1;
+  flex: 0 0 auto;
+}
 
 .sort-group { display: inline-flex; align-items: center; gap: 6px; }
 .sort-dir {
