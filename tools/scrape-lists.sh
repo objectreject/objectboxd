@@ -20,6 +20,7 @@ lists=(
 "intlfilms|hotsake|international-films-to-check-out|84|stream"
 "outragechannel|fakeoutrage|everything-on-the-outrage-channel-1|11|stream"
 "kodasusaka|hotsake|kodasusaka|48|stream"
+"patomorto|rogeriopg1976|pato-morto|140|dlslow"
 )
 
 for entry in "${lists[@]}"; do
