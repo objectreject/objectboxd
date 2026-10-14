@@ -196,7 +196,7 @@ body.result-mode .veil { opacity: 1; }
 
 .upload-hint {
   position: fixed; z-index: 20;
-  left: 40px; bottom: 36px;
+  left: 40px; bottom: calc(36px + env(safe-area-inset-bottom));
   text-align: left;
   font-size: .58rem;
   letter-spacing: .12em;
@@ -218,7 +218,7 @@ body.result-mode .veil { opacity: 1; }
 .upload-hint .hint-link:hover { color: var(--ui-bright); border-bottom-color: var(--ui); }
 
 .upload-logo {
-  position: fixed; top: 32px; left: 40px;
+  position: fixed; top: calc(32px + env(safe-area-inset-top)); left: 40px;
   font-size: 1rem; font-weight: 700;
   color: var(--red); z-index: 20;
 }
@@ -236,7 +236,7 @@ body.result-mode .veil { opacity: 1; }
 
 #screenControls {
   justify-content: space-between;
-  padding: 32px 40px 48px;
+  padding: calc(32px + env(safe-area-inset-top)) 40px calc(48px + env(safe-area-inset-bottom));
 }
 
 .ctrl-top {
@@ -315,11 +315,11 @@ select option {
 
 #screenResult {
   justify-content: flex-end;
-  padding: 0 40px 52px;
+  padding: 0 40px calc(52px + env(safe-area-inset-bottom));
 }
 
 .result-back {
-  position: absolute; top: 30px; left: 40px;
+  position: absolute; top: calc(30px + env(safe-area-inset-top)); left: 40px;
 }
 
 .result-body { max-width: 740px; }
@@ -408,7 +408,7 @@ select option {
 
 .watch-head {
   display: flex; align-items: center; gap: 16px;
-  padding: 26px 40px 18px;
+  padding: calc(26px + env(safe-area-inset-top)) 40px 18px;
   border-bottom: 1px solid rgba(214, 32, 26, 0.22);
   flex: 0 0 auto;
 }
@@ -559,7 +559,7 @@ a.wf-title:hover { color: #ff6a5e; text-decoration: underline; text-underline-of
 
 /* ── Result: subtle bottom-right "where to watch" ───────────────── */
 .result-avail {
-  position: fixed; right: 40px; bottom: 30px; z-index: 12;
+  position: fixed; right: 40px; bottom: calc(30px + env(safe-area-inset-bottom)); z-index: 12;
   display: flex; align-items: center; gap: 8px;
   opacity: .72; pointer-events: auto;
 }
@@ -593,10 +593,10 @@ a.wf-title:hover { color: #ff6a5e; text-decoration: underline; text-underline-of
   #screenResult { padding: 0 20px 40px; }
   .ctrl-top { top: 24px; }
   /* stack the list/rental badges vertically in the bottom-right on phones */
-  .result-avail { right: 20px; bottom: 16px; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .result-avail { right: 20px; bottom: calc(16px + env(safe-area-inset-bottom)); flex-direction: column; align-items: flex-end; gap: 6px; }
   /* bigger silhouette / poster figure on phones (desktop unchanged).
-     Scale past viewport width so it grows vertically; sides crop at the edges. */
-  .fig-window { width: min(140vw, 680px); }
+     ~full width so it's taller than before but the arms still reach the edges. */
+  .fig-window { width: min(104vw, 620px); }
   .watch-head { padding: 24px 20px 16px; }
   .watch-body { padding: 10px 20px 60px; }
   .wf-sources { margin-left: 0; flex-basis: 100%; }
