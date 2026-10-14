@@ -340,14 +340,19 @@ async function fetchPoster(name, year) {
 
 // ── Routing ───────────────────────────────────────────────────────────────────
 
-const _themeMeta = document.querySelector('meta[name="theme-color"]');
+// iOS Safari locks the status-bar tint to the theme-color it read at load and
+// ignores .content mutation — so REPLACE the whole <meta> element to force a re-read.
+function setThemeColor(c) {
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.remove());
+  const m = document.createElement('meta');
+  m.setAttribute('name', 'theme-color');
+  m.setAttribute('content', c);
+  document.head.appendChild(m);
+}
 function showScreen(name) {
   Object.entries(screens).forEach(([k, s]) => s.classList.toggle('hidden', k !== name));
-  // dark on result/torrents, red otherwise. Set BOTH the status-bar tint and the
-  // <html> background — the top safe-area strip on iOS is painted from <html>,
-  // which result-mode (body-scoped) never changed, so it stayed red.
   const c = (name === 'result' || name === 'watch') ? '#050404' : '#b10411';
-  if (_themeMeta) _themeMeta.content = c;
+  setThemeColor(c);
   document.documentElement.style.backgroundColor = c;
 }
 

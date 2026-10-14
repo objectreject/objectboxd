@@ -596,7 +596,7 @@ a.wf-title:hover { color: #ff6a5e; text-decoration: underline; text-underline-of
   .result-avail { right: 20px; bottom: calc(16px + env(safe-area-inset-bottom)); flex-direction: column; align-items: flex-end; gap: 6px; }
   /* bigger silhouette / poster figure on phones (desktop unchanged).
      ~full width so it's taller than before but the arms still reach the edges. */
-  .fig-window { width: min(104vw, 620px); }
+  .fig-window { width: min(98vw, 600px); }
   .watch-head { padding: 24px 20px 16px; }
   .watch-body { padding: 10px 20px 60px; }
   .wf-sources { margin-left: 0; flex-basis: 100%; }
