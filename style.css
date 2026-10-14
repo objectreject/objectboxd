@@ -400,7 +400,7 @@ select option {
 
 /* dark, readable panel over the (still-spinning) sphere */
 #screenWatch {
-  background: rgba(5, 4, 4, 0.94);
+  background: #080605;          /* opaque: scrolling no longer re-blends over the animating sphere */
   color: #e9c4bf;
   overflow: hidden;
   padding: 0;

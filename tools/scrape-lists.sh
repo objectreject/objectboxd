@@ -19,6 +19,7 @@ lists=(
 "pompoarismo|pompoarism0|acervo-pompoarismo|16|stream"
 "intlfilms|hotsake|international-films-to-check-out|84|stream"
 "outragechannel|fakeoutrage|everything-on-the-outrage-channel-1|11|stream"
+"kodasusaka|hotsake|kodasusaka|48|stream"
 )
 
 for entry in "${lists[@]}"; do

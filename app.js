@@ -233,6 +233,7 @@ function parseSimple(text) {
   const h = parseLine(lines[0]).map(x => x.toLowerCase().trim());
   const ni = h.indexOf('name');
   const yi = h.indexOf('year');
+  const di = h.indexOf('date');
   const ui = h.findIndex(x => x.includes('uri') || x === 'url');
   if (ni < 0 || ui < 0) return null;
   const films = lines.slice(1)
@@ -240,7 +241,8 @@ function parseSimple(text) {
     .map(line => {
       const f = parseLine(line);
       const name = f[ni]?.trim() || '', year = yi >= 0 ? f[yi]?.trim() || '' : '', url = f[ui]?.trim() || '';
-      return (name && url) ? { name, year, url } : null;
+      const date = di >= 0 ? f[di]?.trim() || '' : '';
+      return (name && url) ? { name, year, url, date } : null;
     })
     .filter(Boolean);
   return films.length ? { films } : null;
@@ -355,6 +357,9 @@ function showScreen(name) {
   const c = (name === 'result' || name === 'watch') ? '#050404' : '#b10411';
   setThemeColor(c);
   document.documentElement.style.backgroundColor = c;
+  // the sphere is fully covered on the torrents view — hide it so it doesn't
+  // keep compositing behind the scrolling list (desktop scroll jank)
+  el.sphereWrap.style.display = (name === 'watch') ? 'none' : '';
 }
 
 // ── Select population ─────────────────────────────────────────────────────────
@@ -445,7 +450,7 @@ let xrefLoading = null;
 function loadXref() {
   if (xrefData) return Promise.resolve(xrefData);
   if (xrefLoading) return xrefLoading;
-  xrefLoading = fetch('lists-data.json?v=6')
+  xrefLoading = fetch('lists-data.json?v=7')
     .then(r => { if (!r.ok) throw new Error('data'); return r.json(); })
     .then(d => { xrefData = d; return d; });
   return xrefLoading;
@@ -467,6 +472,7 @@ const LIST_CODE = {
   ubuweb: 'UB', oedipus: 'OR', zenxiu: 'ZX', japanokru: 'OK',
   solidarity: 'SC', rarefilmm: 'RF', worldscinema: 'WC',
   internetarchive: 'IA', pompoarismo: 'AP', intlfilms: 'IF', outragechannel: 'OC',
+  kodasusaka: 'KO',
 };
 
 // A row is "download only" when it's available but none of its sources stream.
@@ -520,7 +526,8 @@ function sortRows(arr, mode, dir) {
     alpha: (a, b) => (a.film.name || '').localeCompare(b.film.name || ''),
     year:  (a, b) => ((parseInt(a.film.year, 10) || 0) - (parseInt(b.film.year, 10) || 0))
                      || (a.film.name || '').localeCompare(b.film.name || ''),
-    added: (a, b) => a.idx - b.idx,
+    // date added: newest first by default (dir=1); ↓ flips to oldest first
+    added: (a, b) => ((Date.parse(b.film.date) || 0) - (Date.parse(a.film.date) || 0)) || (a.idx - b.idx),
   }[mode];
   if (cmp) arr.sort((a, b) => dir * cmp(a, b));
   return arr;
