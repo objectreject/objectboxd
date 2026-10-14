@@ -343,8 +343,12 @@ async function fetchPoster(name, year) {
 const _themeMeta = document.querySelector('meta[name="theme-color"]');
 function showScreen(name) {
   Object.entries(screens).forEach(([k, s]) => s.classList.toggle('hidden', k !== name));
-  // keep the mobile status-bar tint in step with the screen (dark on result/torrents)
-  if (_themeMeta) _themeMeta.content = (name === 'result' || name === 'watch') ? '#050404' : '#b10411';
+  // dark on result/torrents, red otherwise. Set BOTH the status-bar tint and the
+  // <html> background — the top safe-area strip on iOS is painted from <html>,
+  // which result-mode (body-scoped) never changed, so it stayed red.
+  const c = (name === 'result' || name === 'watch') ? '#050404' : '#b10411';
+  if (_themeMeta) _themeMeta.content = c;
+  document.documentElement.style.backgroundColor = c;
 }
 
 // ── Select population ─────────────────────────────────────────────────────────
