@@ -31,6 +31,8 @@ const el = {
   watchRental:  $('watchRental'),
   watchDownloads: $('watchDownloads'),
   watchUnavail: $('watchUnavail'),
+  watchSources: $('watchSources'),
+  srcPopup:     $('srcPopup'),
   watchSortDir: $('watchSortDir'),
 };
 const screens = {
@@ -450,7 +452,7 @@ let xrefLoading = null;
 function loadXref() {
   if (xrefData) return Promise.resolve(xrefData);
   if (xrefLoading) return xrefLoading;
-  xrefLoading = fetch('lists-data.json?v=9')
+  xrefLoading = fetch('lists-data.json?v=10')
     .then(r => { if (!r.ok) throw new Error('data'); return r.json(); })
     .then(d => { xrefData = d; return d; });
   return xrefLoading;
@@ -515,10 +517,11 @@ function renderResultAvail(film, token) {
 
 let _watch = null;   // { available:[{film,sources,idx,rental}], unavailable:[...], hasRental }
 let _dir = 1;        // 1 = ascending, -1 = descending
-let _rentalMode = 'on';     // 'on' (show all) | 'off' (hide rentals) | 'only' (rentals only)
+let _rentalMode = 'all';    // 'all' (no filter, default) | 'on' (rentals only) | 'off' (hide rentals)
 let _unavailMode = 'off';   // 'off' (hidden) | 'on' (shown below) | 'only' (only unavailable)
 let _rentalSet = new Set(); // keys of films on the user's Rental list
 let _hasRental = false;
+let _sourceFilter = new Set(); // selected list keys; empty = no source filter
 
 function sortRows(arr, mode, dir) {
   // base comparators are "ascending"; dir (-1) reverses for descending
@@ -584,8 +587,53 @@ function passesFilters(r) {
   const dlOnly = el.watchDownloads.getAttribute('aria-pressed') === 'true';
   if (dlOnly && !isDownloadOnly(r)) return false;      // only films with no streaming option
   if (_rentalMode === 'off' && r.rental) return false; // hide rentals
-  if (_rentalMode === 'only' && !r.rental) return false;
+  if (_rentalMode === 'on' && !r.rental) return false; // rentals only  ('all' = no rental filter)
+  if (_sourceFilter.size && !(r.sources && r.sources.some(s => _sourceFilter.has(s.key)))) return false; // on a selected source
   return true;
+}
+
+// Source-filter popup: toggleable chips for each list, filters to films on any selected source.
+function updateSourcesBtn() {
+  const n = _sourceFilter.size;
+  el.watchSources.textContent = n ? `sources · ${n}` : 'sources';
+  el.watchSources.classList.toggle('on', n > 0);
+}
+function buildSourcePopup(data) {
+  const frag = document.createDocumentFragment();
+  const title = document.createElement('div');
+  title.className = 'src-popup-title';
+  title.textContent = 'filter by source';
+  frag.appendChild(title);
+  const grid = document.createElement('div');
+  grid.className = 'src-grid';
+  data.lists.forEach(l => {
+    const chip = document.createElement('button');
+    chip.className = 'src-chip ' + l.tier;
+    chip.dataset.key = l.key;
+    chip.classList.toggle('on', _sourceFilter.has(l.key));
+    chip.innerHTML =
+      `<span class="src-code">${LIST_CODE[l.key] || l.key.slice(0, 2).toUpperCase()}</span>` +
+      `<span class="src-name">${l.name}</span>`;
+    chip.onclick = () => {
+      if (_sourceFilter.has(l.key)) _sourceFilter.delete(l.key); else _sourceFilter.add(l.key);
+      chip.classList.toggle('on', _sourceFilter.has(l.key));
+      updateSourcesBtn();
+      renderWatch();
+    };
+    grid.appendChild(chip);
+  });
+  frag.appendChild(grid);
+  const clear = document.createElement('button');
+  clear.className = 'src-clear';
+  clear.textContent = 'clear all';
+  clear.onclick = () => {
+    _sourceFilter.clear();
+    grid.querySelectorAll('.src-chip').forEach(c => c.classList.remove('on'));
+    updateSourcesBtn();
+    renderWatch();
+  };
+  frag.appendChild(clear);
+  el.srcPopup.replaceChildren(frag);
 }
 
 function renderWatch() {
@@ -637,8 +685,12 @@ function openWatch(db) {
     return;
   }
 
-  _rentalMode = 'on';                                   // reset controls to defaults on open
+  _rentalMode = 'all';                                  // reset controls to defaults on open (all filters off)
   _unavailMode = 'off';
+  _sourceFilter.clear();
+  updateSourcesBtn();
+  el.srcPopup.classList.add('hidden');
+  el.watchSources.setAttribute('aria-expanded', 'false');
 
   loadXref().then(data => {
     const available = [], unavailable = [];
@@ -654,6 +706,7 @@ function openWatch(db) {
       }
     });
     _watch = { available, unavailable, hasRental: _hasRental };
+    buildSourcePopup(data);
     renderWatch();
   }).catch(() => {
     _watch = null;
@@ -721,8 +774,17 @@ function boot(db) {
     renderWatch();
   };
   const cycle = (cur, seq) => seq[(seq.indexOf(cur) + 1) % seq.length];
-  el.watchRental.onclick = () => { _rentalMode = cycle(_rentalMode, ['on', 'off', 'only']); renderWatch(); };
+  el.watchRental.onclick = () => { _rentalMode = cycle(_rentalMode, ['on', 'all', 'off']); renderWatch(); };
   el.watchUnavail.onclick = () => { _unavailMode = cycle(_unavailMode, ['off', 'on', 'only']); renderWatch(); };
+  el.watchSources.onclick = (e) => {
+    e.stopPropagation();
+    const open = el.srcPopup.classList.toggle('hidden') === false;
+    if (open) {
+      const head = document.querySelector('.watch-head');
+      el.srcPopup.style.top = ((head ? head.offsetHeight : 72) + 6) + 'px';  // drop below the header
+    }
+    el.watchSources.setAttribute('aria-expanded', String(open));
+  };
   showScreen('controls');
 }
 
@@ -775,6 +837,15 @@ el.dropzone.addEventListener('drop', e => {
   e.preventDefault();
   el.dropzone.classList.remove('drag-over');
   handleFiles(e.dataTransfer.files);
+});
+
+// close the source-filter popup on an outside click (registered once)
+document.addEventListener('click', (e) => {
+  if (!el.srcPopup || el.srcPopup.classList.contains('hidden')) return;
+  if (!el.srcPopup.contains(e.target) && e.target !== el.watchSources) {
+    el.srcPopup.classList.add('hidden');
+    el.watchSources.setAttribute('aria-expanded', 'false');
+  }
 });
 
 // Restore a recent upload (within the week) so you don't have to re-upload;

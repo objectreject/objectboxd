@@ -423,7 +423,7 @@ select option {
 .watch-controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: flex-end; }
 
 /* filter toggles — pills with distinct accents (teal rental, amber downloads, red unavailable) */
-.rental-toggle, .dl-toggle, .unavail-toggle {
+.rental-toggle, .dl-toggle, .unavail-toggle, .src-toggle {
   font-family: var(--font);
   font-size: .62rem; letter-spacing: .1em; text-transform: uppercase;
   color: rgba(224, 120, 110, 0.72);
@@ -434,15 +434,57 @@ select option {
 }
 /* each tri-state is one hue; "off" is a muted outline (like downloads-off), the
    active states fill light -> dark */
-.rental-toggle[data-state="on"]   { color: #0a0404; background: #6fd3c7; border-color: #6fd3c7; font-weight: 700; } /* teal — all */
-.rental-toggle[data-state="off"]  { color: rgba(224, 120, 110, 0.72); background: transparent; border-color: rgba(224, 120, 110, 0.38); } /* muted — hidden */
-.rental-toggle[data-state="only"] { color: #fff6f4; background: #2f8a7e; border-color: #2f8a7e; font-weight: 700; } /* teal dark — only */
+.rental-toggle[data-state="all"]  { color: rgba(224, 120, 110, 0.72); background: transparent; border-color: rgba(224, 120, 110, 0.38); } /* muted — no filter (default) */
+.rental-toggle[data-state="on"]   { color: #0a0404; background: #6fd3c7; border-color: #6fd3c7; font-weight: 700; } /* teal — rentals only */
+.rental-toggle[data-state="off"]  { color: #fff6f4; background: #2f8a7e; border-color: #2f8a7e; font-weight: 700; } /* teal dark — hide rentals */
 .unavail-toggle[data-state="off"]  { color: rgba(224, 120, 110, 0.72); background: transparent; border-color: rgba(224, 120, 110, 0.38); } /* muted — off */
 .unavail-toggle[data-state="on"]   { color: #0a0404; background: #d98fa0; border-color: #d98fa0; font-weight: 700; } /* rose mid — shown */
 .unavail-toggle[data-state="only"] { color: #fff6f4; background: #9c4f60; border-color: #9c4f60; font-weight: 700; } /* rose dark — only */
 /* downloads: amber when on */
 .dl-toggle[aria-pressed="true"] { color: #0a0404; background: #e0a44a; border-color: #e0a44a; font-weight: 700; }
-.rental-toggle:hover, .unavail-toggle:hover, .dl-toggle:hover { filter: brightness(1.08); }
+.src-toggle.on { color: #0a0404; background: #cbb4e0; border-color: #cbb4e0; font-weight: 700; } /* lavender when a source filter is active */
+.rental-toggle:hover, .unavail-toggle:hover, .dl-toggle:hover, .src-toggle:hover { filter: brightness(1.08); }
+
+/* source-filter popup */
+.src-popup {
+  position: absolute; right: 40px; top: 84px; z-index: 30;
+  width: min(320px, calc(100vw - 48px));
+  background: #140c0c; border: 1px solid rgba(224, 120, 110, 0.3);
+  border-radius: 10px; padding: 14px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+.src-popup-title {
+  font-size: .58rem; letter-spacing: .18em; text-transform: uppercase;
+  color: rgba(224, 120, 110, 0.6); margin-bottom: 10px;
+}
+.src-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+.src-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--font); cursor: pointer;
+  background: transparent; border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px; padding: 5px 9px;
+  transition: background .15s, border-color .15s;
+}
+.src-chip .src-code {
+  font-size: .62rem; font-weight: 700; letter-spacing: .06em;
+}
+.src-chip.stream .src-code { color: #ff6a5e; }
+.src-chip.dlfast .src-code { color: #ff9e6a; }
+.src-chip.dlslow .src-code { color: #ffc766; }
+.src-chip .src-name {
+  font-size: .64rem; letter-spacing: .02em; color: rgba(233, 196, 191, 0.75);
+}
+.src-chip:hover { border-color: rgba(255, 255, 255, 0.3); }
+.src-chip.on { background: rgba(203, 180, 224, 0.16); border-color: #cbb4e0; }
+.src-chip.on .src-name { color: #f0e6f5; }
+.src-clear {
+  margin-top: 12px; width: 100%;
+  font-family: var(--font); font-size: .58rem; letter-spacing: .14em; text-transform: uppercase;
+  color: rgba(224, 120, 110, 0.7); background: transparent;
+  border: 1px solid rgba(224, 120, 110, 0.3); border-radius: 6px;
+  padding: 7px; cursor: pointer; transition: color .15s, border-color .15s;
+}
+.src-clear:hover { color: #ff6a5e; border-color: rgba(255, 106, 94, 0.5); }
 
 .wf-rental {
   color: #6fd3c7; margin-right: 1px; font-size: .92rem; line-height: 1;
