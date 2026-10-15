@@ -517,7 +517,7 @@ function renderResultAvail(film, token) {
 
 let _watch = null;   // { available:[{film,sources,idx,rental}], unavailable:[...], hasRental }
 let _dir = 1;        // 1 = ascending, -1 = descending
-let _rentalMode = 'off';    // 'off' (hide rentals, default) | 'on' (show everything) | 'only' (rentals only)
+let _rentalMode = 'on';     // 'on' (show everything, default) | 'off' (hide rentals) | 'only' (rentals only)
 let _unavailMode = 'off';   // 'off' (hidden) | 'on' (shown below) | 'only' (only unavailable)
 let _rentalSet = new Set(); // keys of films on the user's Rental list
 let _hasRental = false;
@@ -685,7 +685,7 @@ function openWatch(db) {
     return;
   }
 
-  _rentalMode = 'off';                                  // reset controls to defaults on open (all filters off)
+  _rentalMode = 'on';                                   // reset controls to defaults on open (rentals shown)
   _unavailMode = 'off';
   _sourceFilter.clear();
   updateSourcesBtn();
