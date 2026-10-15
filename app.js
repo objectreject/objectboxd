@@ -450,7 +450,7 @@ let xrefLoading = null;
 function loadXref() {
   if (xrefData) return Promise.resolve(xrefData);
   if (xrefLoading) return xrefLoading;
-  xrefLoading = fetch('lists-data.json?v=8')
+  xrefLoading = fetch('lists-data.json?v=9')
     .then(r => { if (!r.ok) throw new Error('data'); return r.json(); })
     .then(d => { xrefData = d; return d; });
   return xrefLoading;
@@ -472,7 +472,7 @@ const LIST_CODE = {
   ubuweb: 'UB', oedipus: 'OR', zenxiu: 'ZX', japanokru: 'OK',
   solidarity: 'SC', rarefilmm: 'RF', worldscinema: 'WC',
   internetarchive: 'IA', pompoarismo: 'AP', intlfilms: 'IF', outragechannel: 'OC',
-  kodasusaka: 'KO', patomorto: 'PM',
+  kodasusaka: 'KO', patomorto: 'PM', rarelust: 'RL',
 };
 
 // A row is "download only" when it's available but none of its sources stream.

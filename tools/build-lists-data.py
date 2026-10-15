@@ -21,6 +21,8 @@ LISTS = [
     {"key":"outragechannel", "name":"The Outrage Channel", "tier":"stream", "url":"https://letterboxd.com/fakeoutrage/list/everything-on-the-outrage-channel-1/"},
     {"key":"kodasusaka", "name":"Kodasusaka", "tier":"stream", "url":"https://letterboxd.com/hotsake/list/kodasusaka/"},
     {"key":"patomorto", "name":"Pato Morto", "tier":"dlslow", "url":"https://letterboxd.com/rogeriopg1976/list/pato-morto/"},
+    # Rarelust = one source combined from two lists (owmylawd + ooopha) into rarelust.tsv by scrape-lists.sh
+    {"key":"rarelust", "name":"Rarelust", "tier":"dlslow", "url":"https://letterboxd.com/owmylawd/list/rarelust/"},
 ]
 
 NAME_RE = re.compile(r'^(.*)\s+\((\d{4})\)\s*$')

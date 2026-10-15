@@ -21,6 +21,8 @@ lists=(
 "outragechannel|fakeoutrage|everything-on-the-outrage-channel-1|11|stream"
 "kodasusaka|hotsake|kodasusaka|48|stream"
 "patomorto|rogeriopg1976|pato-morto|140|dlslow"
+"rarelust_a|owmylawd|rarelust|64|dlslow"
+"rarelust_b|ooopha|rarelust-completeish-list|167|dlslow"
 )
 
 for entry in "${lists[@]}"; do
@@ -39,4 +41,6 @@ for entry in "${lists[@]}"; do
   done
   echo "$key done: $(wc -l < "$OUT/$key.tsv" | tr -d ' ') films"
 done
+# Rarelust is one source split across two lists → combine into rarelust.tsv
+cat "$OUT/rarelust_a.tsv" "$OUT/rarelust_b.tsv" > "$OUT/rarelust.tsv" 2>/dev/null
 echo "ALL DONE"
