@@ -23,6 +23,7 @@ lists=(
 "patomorto|rogeriopg1976|pato-morto|140|dlslow"
 "rarelust_a|owmylawd|rarelust|64|dlslow"
 "rarelust_b|ooopha|rarelust-completeish-list|167|dlslow"
+"onyoutube|nowhere1997|on-youtube|6|stream"
 )
 
 for entry in "${lists[@]}"; do

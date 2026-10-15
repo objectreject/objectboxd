@@ -23,6 +23,7 @@ LISTS = [
     {"key":"patomorto", "name":"Pato Morto", "tier":"dlslow", "url":"https://letterboxd.com/rogeriopg1976/list/pato-morto/"},
     # Rarelust = one source combined from two lists (owmylawd + ooopha) into rarelust.tsv by scrape-lists.sh
     {"key":"rarelust", "name":"Rarelust", "tier":"dlslow", "url":"https://letterboxd.com/ooopha/list/rarelust-completeish-list/"},
+    {"key":"onyoutube", "name":"On YouTube", "tier":"stream", "url":"https://letterboxd.com/nowhere1997/list/on-youtube/"},
 ]
 
 NAME_RE = re.compile(r'^(.*)\s+\((\d{4})\)\s*$')
