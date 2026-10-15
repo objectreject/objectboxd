@@ -517,7 +517,7 @@ function renderResultAvail(film, token) {
 
 let _watch = null;   // { available:[{film,sources,idx,rental}], unavailable:[...], hasRental }
 let _dir = 1;        // 1 = ascending, -1 = descending
-let _rentalMode = 'off';    // 'off' (no filter, default) | 'on' (hide rentals) | 'only' (rentals only)
+let _rentalMode = 'off';    // 'off' (hide rentals, default) | 'on' (show everything) | 'only' (rentals only)
 let _unavailMode = 'off';   // 'off' (hidden) | 'on' (shown below) | 'only' (only unavailable)
 let _rentalSet = new Set(); // keys of films on the user's Rental list
 let _hasRental = false;
@@ -586,8 +586,8 @@ function makeRow({ film, sources, rental }) {
 function passesFilters(r) {
   const dlOnly = el.watchDownloads.getAttribute('aria-pressed') === 'true';
   if (dlOnly && !isDownloadOnly(r)) return false;      // only films with no streaming option
-  if (_rentalMode === 'on' && r.rental) return false;    // hide rentals
-  if (_rentalMode === 'only' && !r.rental) return false; // rentals only  ('off' = no rental filter)
+  if (_rentalMode === 'off' && r.rental) return false;   // off = rentals hidden (default)
+  if (_rentalMode === 'only' && !r.rental) return false; // only = rentals only  ('on' = show everything)
   if (_sourceFilter.size && !(r.sources && r.sources.some(s => _sourceFilter.has(s.key)))) return false; // on a selected source
   return true;
 }

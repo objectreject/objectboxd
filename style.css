@@ -434,8 +434,8 @@ select option {
 }
 /* each tri-state is one hue; "off" is a muted outline (like downloads-off), the
    active states fill light -> dark */
-.rental-toggle[data-state="off"]  { color: rgba(224, 120, 110, 0.72); background: transparent; border-color: rgba(224, 120, 110, 0.38); } /* muted — no filter (default) */
-.rental-toggle[data-state="on"]   { color: #0a0404; background: #6fd3c7; border-color: #6fd3c7; font-weight: 700; } /* teal — hide rentals */
+.rental-toggle[data-state="on"]   { color: rgba(224, 120, 110, 0.72); background: transparent; border-color: rgba(224, 120, 110, 0.38); } /* muted — show everything (no filter) */
+.rental-toggle[data-state="off"]  { color: #0a0404; background: #6fd3c7; border-color: #6fd3c7; font-weight: 700; } /* teal — rentals hidden (default) */
 .rental-toggle[data-state="only"] { color: #fff6f4; background: #2f8a7e; border-color: #2f8a7e; font-weight: 700; } /* teal dark — rentals only */
 .unavail-toggle[data-state="off"]  { color: rgba(224, 120, 110, 0.72); background: transparent; border-color: rgba(224, 120, 110, 0.38); } /* muted — off */
 .unavail-toggle[data-state="on"]   { color: #0a0404; background: #d98fa0; border-color: #d98fa0; font-weight: 700; } /* rose mid — shown */
