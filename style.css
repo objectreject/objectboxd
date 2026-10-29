@@ -338,6 +338,17 @@ select option {
   text-shadow: 0 2px 40px rgba(0,0,0,.35);
 }
 
+.result-title { cursor: pointer; }
+.result-title:hover { color: var(--red-bright); }
+.copy-hint {
+  font-size: .58rem; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--muted); margin: -16px 0 20px;
+  opacity: 0; transition: opacity .18s, color .18s; pointer-events: none;
+  white-space: nowrap;
+}
+.result-body:hover .copy-hint { opacity: .75; }
+.copy-hint.copied { opacity: 1; color: var(--red-bright); }
+
 .result-actions {
   display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
 }

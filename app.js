@@ -23,6 +23,7 @@ const el = {
   resultTitle:  $('resultTitle'),
   resultLink:   $('resultLink'),
   resultAvail:  $('resultAvail'),
+  copyHint:     $('copyHint'),
   spinAgain:    $('spinAgain'),
   watchOpenBtn: $('watchOpenBtn'),
   watchBackBtn: $('watchBackBtn'),
@@ -740,8 +741,37 @@ function resetPoster() {
   document.body.classList.remove('result-mode'); // flip back to red bg / black text
 }
 
+// Click the result title to copy "Title (Year)" to the clipboard.
+let _copyT;
+function copyTitle() {
+  const name = el.resultTitle.textContent.trim();
+  if (!name) return;
+  const year = el.resultYear.textContent.trim();
+  const text = year ? `${name} (${year})` : name;
+  const done = () => {
+    el.copyHint.textContent = '✓ copied';
+    el.copyHint.classList.add('copied');
+    clearTimeout(_copyT);
+    _copyT = setTimeout(() => { el.copyHint.textContent = '⧉ copy title'; el.copyHint.classList.remove('copied'); }, 1600);
+  };
+  const fallback = () => {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+      done();
+    } catch (e) { /* clipboard unavailable */ }
+  };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(fallback);
+    } else { fallback(); }
+  } catch (e) { fallback(); }
+}
+
 function boot(db) {
   populateSelect(db);
+  el.resultTitle.onclick = copyTitle;
 
   // The user's own "Rental" list → set of keys, shared by the draw result and the torrents view.
   const rentalList = db.lists.find(l => l.name !== 'Watchlist' && /rental/i.test(l.name));
