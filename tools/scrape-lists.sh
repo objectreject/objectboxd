@@ -24,6 +24,9 @@ lists=(
 "rarelust_a|owmylawd|rarelust|64|dlslow"
 "rarelust_b|ooopha|rarelust-completeish-list|167|dlslow"
 "onyoutube|nowhere1997|on-youtube|6|stream"
+"sasori|bruval|sasoricinema-catalogue|16|stream"
+"rarefinder|onlinehumorous|rarefinder-asian-movies|12|stream"
+"somemovies|hikageniko|some-movies|1|stream"
 )
 
 for entry in "${lists[@]}"; do

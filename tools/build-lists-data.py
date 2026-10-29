@@ -24,6 +24,9 @@ LISTS = [
     # Rarelust = one source combined from two lists (owmylawd + ooopha) into rarelust.tsv by scrape-lists.sh
     {"key":"rarelust", "name":"Rarelust", "tier":"dlslow", "url":"https://letterboxd.com/ooopha/list/rarelust-completeish-list/"},
     {"key":"onyoutube", "name":"On YouTube", "tier":"stream", "url":"https://letterboxd.com/nowhere1997/list/on-youtube/"},
+    {"key":"sasori", "name":"Sasori Cinema", "tier":"stream", "url":"https://letterboxd.com/bruval/list/sasoricinema-catalogue/"},
+    {"key":"rarefinder", "name":"Rarefinder Asian Movies", "tier":"stream", "url":"https://letterboxd.com/onlinehumorous/list/rarefinder-asian-movies/"},
+    {"key":"somemovies", "name":"Some Movies", "tier":"stream", "url":"https://letterboxd.com/hikageniko/list/some-movies/"},
 ]
 
 NAME_RE = re.compile(r'^(.*)\s+\((\d{4})\)\s*$')
