@@ -472,10 +472,10 @@ const TIER_RANK = { stream: 0, dlfast: 1, dlslow: 2 };
 // Two-letter code shown on each source badge (full list name in the tooltip).
 const LIST_CODE = {
   ubuweb: 'UB', oedipus: 'OR', zenxiu: 'ZX', japanokru: 'OK',
-  solidarity: 'SC', rarefilmm: 'RF', worldscinema: 'WC',
+  solidarity: 'SC', rarefilmm: 'RFM', worldscinema: 'WC',
   internetarchive: 'IA', pompoarismo: 'AP', intlfilms: 'IF', outragechannel: 'OC',
   kodasusaka: 'KO', patomorto: 'PM', rarelust: 'RL', onyoutube: 'YT',
-  sasori: 'SA', rarefinder: 'RD', somemovies: 'SM',
+  sasori: 'SA', rarefinder: 'RFD', somemovies: 'SM',
 };
 
 // A row is "download only" when it's available but none of its sources stream.
