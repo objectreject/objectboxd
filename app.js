@@ -752,7 +752,7 @@ function copyTitle() {
     el.copyHint.textContent = '✓ copied';
     el.copyHint.classList.add('copied');
     clearTimeout(_copyT);
-    _copyT = setTimeout(() => { el.copyHint.textContent = '⧉ copy title'; el.copyHint.classList.remove('copied'); }, 1600);
+    _copyT = setTimeout(() => { el.copyHint.classList.remove('copied'); }, 1000);
   };
   const fallback = () => {
     try {
