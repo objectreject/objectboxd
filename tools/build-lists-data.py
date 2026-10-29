@@ -27,6 +27,10 @@ LISTS = [
     {"key":"sasori", "name":"Sasori Cinema", "tier":"stream", "url":"https://letterboxd.com/bruval/list/sasoricinema-catalogue/"},
     {"key":"rarefinder", "name":"Rarefinder Asian Movies", "tier":"stream", "url":"https://letterboxd.com/onlinehumorous/list/rarefinder-asian-movies/"},
     {"key":"somemovies", "name":"Some Movies", "tier":"stream", "url":"https://letterboxd.com/hikageniko/list/some-movies/"},
+    {"key":"vk", "name":"Available on VK", "tier":"stream", "url":"https://letterboxd.com/bixianbixian/list/available-on-vk/"},
+    {"key":"nicofilm", "name":"NicoFilm Archive", "tier":"stream", "url":"https://letterboxd.com/nicowwt/list/films-archive-of-nicofilm/"},
+    {"key":"koji", "name":"Koji Shiraishi Online", "tier":"stream", "url":"https://letterboxd.com/nicky_cage/list/koji-shiraishi-films-available-online/"},
+    {"key":"intake", "name":"Intake Cinema YouTube", "tier":"stream", "url":"https://letterboxd.com/intakecinema/list/films-on-the-youtube-channel/"},
 ]
 
 NAME_RE = re.compile(r'^(.*)\s+\((\d{4})\)\s*$')

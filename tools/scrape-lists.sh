@@ -27,6 +27,10 @@ lists=(
 "sasori|bruval|sasoricinema-catalogue|16|stream"
 "rarefinder|onlinehumorous|rarefinder-asian-movies|12|stream"
 "somemovies|hikageniko|some-movies|1|stream"
+"vk|bixianbixian|available-on-vk|19|stream"
+"nicofilm|nicowwt|films-archive-of-nicofilm|3|stream"
+"koji|nicky_cage|koji-shiraishi-films-available-online|1|stream"
+"intake|intakecinema|films-on-the-youtube-channel|1|stream"
 )
 
 for entry in "${lists[@]}"; do

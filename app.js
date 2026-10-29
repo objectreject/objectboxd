@@ -452,7 +452,7 @@ let xrefLoading = null;
 function loadXref() {
   if (xrefData) return Promise.resolve(xrefData);
   if (xrefLoading) return xrefLoading;
-  xrefLoading = fetch('lists-data.json?v=12')
+  xrefLoading = fetch('lists-data.json?v=13')
     .then(r => { if (!r.ok) throw new Error('data'); return r.json(); })
     .then(d => { xrefData = d; return d; });
   return xrefLoading;
@@ -476,6 +476,7 @@ const LIST_CODE = {
   internetarchive: 'IA', pompoarismo: 'AP', intlfilms: 'IF', outragechannel: 'OC',
   kodasusaka: 'KO', patomorto: 'PM', rarelust: 'RL', onyoutube: 'YT',
   sasori: 'SA', rarefinder: 'RFD', somemovies: 'SM',
+  vk: 'VK', nicofilm: 'NF', koji: 'KS', intake: 'IC',
 };
 
 // A row is "download only" when it's available but none of its sources stream.
