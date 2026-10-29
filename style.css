@@ -338,7 +338,7 @@ select option {
   text-shadow: 0 2px 40px rgba(0,0,0,.35);
 }
 
-.result-title { cursor: pointer; }
+.result-title { cursor: pointer; display: inline-block; }   /* shrink to text so the click area / pointer only covers the title */
 .copy-hint {
   font-size: .58rem; letter-spacing: .16em; text-transform: uppercase;
   color: var(--red-bright); margin: -16px 0 20px;
